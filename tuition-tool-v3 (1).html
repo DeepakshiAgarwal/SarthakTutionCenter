@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>TuitionPro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f0f2f8;--white:#fff;--border:#e2e6f0;--text:#1a1d27;--muted:#6b7280;--sub:#9ca3af;
+  --primary:#4361ee;--pl:#eef0fd;--green:#16a34a;--gl:#dcfce7;
+  --red:#dc2626;--rl:#fee2e2;--amber:#d97706;--al:#fef3c7;
+  --teal:#0891b2;--tl:#cffafe;--purple:#7c3aed;--ppl:#f3e8ff;
+  --wa:#25D366;--wal:#dcfce7;
+  --nav-h:60px;--topbar-h:56px;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;-webkit-appearance:none}
+input,select,textarea{font-family:inherit;font-size:14px;-webkit-appearance:none}
+
+/* ─── LOGIN ─── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100dvh;background:linear-gradient(160deg,#4361ee 0%,#7c3aed 100%);padding:16px}
+.login-box{background:#fff;border-radius:24px;padding:32px 24px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,.25)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo .icon{font-size:44px;margin-bottom:8px}
+.login-logo h1{font-size:22px;font-weight:700;color:var(--primary)}
+.login-logo p{color:var(--muted);font-size:13px;margin-top:3px}
+.l-tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px;margin-bottom:20px}
+.l-tab{flex:1;padding:9px 8px;border:none;background:none;border-radius:9px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s}
+.l-tab.active{background:#fff;color:var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.l-form{display:none}.l-form.active{display:block}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px}
+.fg input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none;transition:border .15s;background:#fff}
+.fg input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(67,97,238,.1)}
+.login-btn{width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px}
+.login-btn.admin{background:var(--primary);color:#fff}
+.login-btn.student{background:var(--wa);color:#fff}
+.login-btn:active{transform:scale(.98)}
+.login-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.6}
+.login-err{color:var(--red);font-size:12px;margin-top:8px;text-align:center;min-height:16px}
+
+/* ─── APP SHELL ─── */
+#app{display:none;height:100dvh;flex-direction:column;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;position:sticky;top:0;z-index:50}
+.topbar-menu{font-size:20px;background:none;border:none;padding:4px;line-height:1}
+.topbar h1{flex:1;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px;padding-bottom:calc(var(--nav-h) + 16px)}
+.page{display:none}.page.active{display:block}
+
+/* ─── BOTTOM NAV (mobile) ─── */
+.bottom-nav{height:var(--nav-h);background:var(--white);border-top:1px solid var(--border);display:flex;align-items:stretch;position:fixed;bottom:0;left:0;right:0;z-index:50}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;font-size:10px;color:var(--muted);cursor:pointer;padding:6px 2px;transition:color .15s}
+.bn-item.active{color:var(--primary)}
+.bn-item .bn-icon{font-size:20px;line-height:1}
+.bn-badge{position:relative}
+.bn-badge::after{content:attr(data-count);position:absolute;top:-4px;right:-8px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:999px;display:none}
+.bn-badge[data-count]:not([data-count="0"])::after{display:block}
+
+/* ─── SIDEBAR (desktop) ─── */
+.sidebar{width:240px;min-width:240px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sidebar-logo{padding:16px 18px;border-bottom:1px solid var(--border)}
+.sidebar-logo h2{font-size:15px;font-weight:700;color:var(--primary)}
+.sidebar-logo p{font-size:11px;color:var(--muted);margin-top:2px}
+.sidebar-section{padding:12px 18px 4px;font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.07em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:1px 8px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;border:none;background:none;width:calc(100% - 16px);text-align:left}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--pl);color:var(--primary);font-weight:600}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.sidebar-bottom{margin-top:auto;padding:12px;border-top:1px solid var(--border)}
+.user-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:10px;margin-bottom:8px}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;background:var(--pl);color:var(--primary)}
+.user-chip .info{flex:1;min-width:0}
+.user-chip .uname{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-chip .urole{font-size:10px;color:var(--muted)}
+.logout-btn{width:100%;padding:7px;background:none;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--muted);cursor:pointer}
+.logout-btn:hover{background:var(--rl);color:var(--red);border-color:var(--red)}
+
+/* ─── LAYOUT ─── */
+.desktop-layout{display:flex;flex:1;overflow:hidden}
+
+/* ─── CARDS ─── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px}
+.card-sm{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.stat-val{font-size:24px;font-weight:700;line-height:1}
+.stat-label{font-size:11px;color:var(--muted);margin-top:3px}
+.stat-sub{font-size:11px;margin-top:5px;font-weight:500}
+.green{color:var(--green)}.red{color:var(--red)}.amber{color:var(--amber)}.blue{color:var(--primary)}.purple{color:var(--purple)}.wa-color{color:var(--wa)}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--white);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn:hover{background:var(--bg)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:#3451d1}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:7px}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-red{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-wa{background:var(--wa);color:#fff;border-color:var(--wa);font-weight:600}
+.btn-wa:hover{background:#1fb855}
+.btn-ghost{background:none;border:none;color:var(--muted);padding:6px 8px;cursor:pointer;font-size:20px;line-height:1}
+.btn-full{width:100%;justify-content:center}
+
+/* ─── BADGES ─── */
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500}
+.badge-green{background:var(--gl);color:var(--green)}
+.badge-red{background:var(--rl);color:var(--red)}
+.badge-amber{background:var(--al);color:var(--amber)}
+.badge-blue{background:var(--pl);color:var(--primary)}
+.badge-gray{background:var(--bg);color:var(--muted)}
+.badge-wa{background:var(--wal);color:var(--wa)}
+
+/* ─── TABLE ─── */
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;background:var(--white);min-width:400px}
+th{background:var(--bg);padding:10px 12px;text-align:left;font-size:11px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbff}
+
+/* ─── FORMS ─── */
+.form-group{margin-bottom:13px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;color:var(--text);background:var(--white);outline:none;transition:border .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(67,97,238,.08)}
+textarea{resize:vertical;min-height:90px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ─── MODAL ─── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:92dvh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.15);animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1}
+.modal-head h3{font-size:15px;font-weight:700}
+.modal-body{padding:20px}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--white)}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0;cursor:pointer}
+
+/* ─── MISC ─── */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-head h2{font-size:14px;font-weight:700}
+.fee-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)}
+.fee-row:last-child{border-bottom:none}
+.notice{border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:10px;border:1px solid}
+.notice.blue{background:var(--pl);border-color:rgba(67,97,238,.2);color:var(--primary)}
+.notice.amber{background:var(--al);border-color:rgba(217,119,6,.2);color:var(--amber)}
+.notice.green{background:var(--gl);border-color:rgba(22,163,74,.2);color:var(--green)}
+.notice.red{background:var(--rl);border-color:rgba(220,38,38,.2);color:var(--red)}
+.notice.wa{background:var(--wal);border-color:rgba(37,211,102,.3);color:#128c4e}
+.progress{height:6px;background:var(--border);border-radius:999px;overflow:hidden}
+.progress-bar{height:100%;border-radius:999px;background:var(--primary);transition:width .4s}
+.progress-bar.green{background:var(--green)}.progress-bar.amber{background:var(--amber)}.progress-bar.red{background:var(--red)}
+.kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px}
+.k-col{min-width:190px;background:var(--bg);border-radius:12px;padding:12px}
+.k-col-head{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;letter-spacing:.05em}
+.k-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.k-card:hover{border-color:var(--primary)}
+.att-student{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.att-student:last-child{border-bottom:none}
+.att-name{flex:1;font-size:13px;font-weight:500}
+.att-btns{display:flex;gap:5px}
+.att-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border);background:var(--white);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.att-btn.P{background:var(--green);border-color:var(--green);color:#fff}
+.att-btn.A{background:var(--red);border-color:var(--red);color:#fff}
+.att-btn.L{background:var(--amber);border-color:var(--amber);color:#fff}
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.sect-label{font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.07em;text-transform:uppercase;margin:14px 0 8px}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.items-center{align-items:center}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
+.bold{font-weight:600}.muted{color:var(--muted)}.small{font-size:12px}
+
+/* ─── STUDENT PORTAL ─── */
+.sp-header{background:linear-gradient(135deg,var(--primary),var(--purple));padding:20px;color:#fff;border-radius:14px;margin-bottom:14px}
+.sp-header h2{font-size:18px;font-weight:700}
+.sp-header p{font-size:12px;opacity:.85;margin-top:2px}
+.sp-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.sp-stat{background:rgba(255,255,255,.18);border-radius:10px;padding:12px;text-align:center}
+.sp-stat-val{font-size:20px;font-weight:700;color:#fff}
+.sp-stat-label{font-size:10px;color:rgba(255,255,255,.8);margin-top:2px}
+.score-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)}
+.score-row:last-child{border-bottom:none}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.cal-day{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+.cal-day.P{background:var(--gl);color:var(--green)}
+.cal-day.A{background:var(--rl);color:var(--red)}
+.cal-day.L{background:var(--al);color:var(--amber)}
+.cal-day.empty{background:var(--bg);color:var(--sub)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row .info{flex:1;padding-right:12px}
+.settings-row .bold{font-size:13px}
+.settings-row .muted{font-size:12px;margin-top:2px}
+
+/* ─── WHATSAPP SECTION ─── */
+.wa-status-bar{display:flex;align-items:center;gap:10px;background:var(--wal);border:1px solid rgba(37,211,102,.3);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.wa-dot{width:10px;height:10px;border-radius:50%;background:var(--sub);flex-shrink:0}
+.wa-dot.connected{background:var(--wa);box-shadow:0 0 0 3px rgba(37,211,102,.25);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(37,211,102,.25)}50%{box-shadow:0 0 0 6px rgba(37,211,102,.1)}}
+.wa-status-text{flex:1;font-size:13px;font-weight:500}
+.wa-qr-box{background:#fff;border:2px solid var(--border);border-radius:14px;padding:24px;text-align:center;margin-bottom:14px}
+.wa-qr-canvas{width:200px;height:200px;margin:0 auto 12px;display:block;border-radius:8px}
+.wa-instructions{text-align:left;background:var(--bg);border-radius:10px;padding:14px}
+.wa-instructions li{font-size:13px;margin-bottom:6px;color:var(--text);line-height:1.5;padding-left:4px}
+.wa-instructions li::marker{color:var(--wa);font-weight:700}
+.wa-contact-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.wa-contact-row:last-child{border-bottom:none}
+.msg-preview-bubble{background:#dcfce7;border-radius:12px 12px 4px 12px;padding:10px 14px;font-size:13px;line-height:1.6;color:#1a3a1a;max-width:90%;margin:8px 0;white-space:pre-line;border:1px solid rgba(37,211,102,.2)}
+
+/* ─── PROGRESS INDICATOR ─── */
+.progress-steps{display:flex;align-items:center;gap:0;margin-bottom:20px}
+.ps{flex:1;height:4px;background:var(--border);border-radius:2px;position:relative}
+.ps.done{background:var(--wa)}
+.ps-dot{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;position:relative;z-index:1}
+.ps-dot.done{border-color:var(--wa);background:var(--wa);color:#fff}
+.ps-dot.active{border-color:var(--primary);color:var(--primary)}
+
+/* ─── RESPONSIVE ─── */
+@media(min-width:768px){
+  #app{flex-direction:row}
+  .desktop-layout{flex:1;flex-direction:column;overflow:hidden}
+  .bottom-nav{display:none}
+  .sidebar{display:flex}
+  .topbar-menu{display:none}
+  .content{padding:20px;padding-bottom:20px}
+  .grid4{grid-template-columns:repeat(4,1fr)}
+  .grid3{grid-template-columns:repeat(3,1fr)}
+  .grid2{grid-template-columns:1fr 1fr}
+  .modal-overlay{align-items:center}
+  .modal{border-radius:20px;max-width:520px;max-height:88vh}
+  @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .form-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:767px){
+  .sidebar{display:none}
+  .sidebar.mobile-open{display:flex;position:fixed;inset:0;z-index:100;width:100%;max-width:280px}
+  .grid4{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  table{min-width:500px}
+  .desktop-btn{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="icon">📚</div>
+      <h1>TuitionPro</h1>
+      <p>Institute Management System</p>
+    </div>
+    <div class="l-tabs">
+      <button class="l-tab active" onclick="switchLTab('admin',this)">🔐 Admin</button>
+      <button class="l-tab" onclick="switchLTab('student',this)">🎓 Student</button>
+    </div>
+    <div id="admin-lf" class="l-form active">
+      <div class="fg"><label>Admin Password</label><input type="password" id="admin-pass" placeholder="Enter password" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+      <button class="login-btn admin" onclick="adminLogin()">Login as Admin →</button>
+      <div class="login-hint">Default: <strong>admin123</strong> · Change in Settings</div>
+      <div class="login-err" id="admin-err"></div>
+    </div>
+    <div id="student-lf" class="l-form">
+      <div class="fg"><label>Your Mobile Number</label><input type="tel" id="student-phone" placeholder="10-digit number" maxlength="10" inputmode="numeric" onkeydown="if(event.key==='Enter')studentLogin()"/></div>
+      <button class="login-btn student" onclick="studentLogin()">View My Portal →</button>
+      <div class="login-hint">Enter the phone registered with your institute</div>
+      <div class="login-err" id="student-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app">
+  <!-- Desktop Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <h2>📚 TuitionPro</h2>
+      <p id="inst-name-sb">Institute</p>
+    </div>
+    <div id="admin-sidebar-nav">
+      <div class="sidebar-section">Main</div>
+      <button class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">🏠</span><span>Dashboard</span></button>
+      <button class="nav-item" onclick="nav('students')"><span class="nav-icon">🎓</span><span>Students</span></button>
+      <button class="nav-item" onclick="nav('leads')"><span class="nav-icon">🎯</span><span>Leads</span></button>
+      <button class="nav-item" onclick="nav('batches')"><span class="nav-icon">👥</span><span>Batches</span></button>
+      <div class="sidebar-section">Academic</div>
+      <button class="nav-item" onclick="nav('attendance')"><span class="nav-icon">📋</span><span>Attendance</span></button>
+      <button class="nav-item" onclick="nav('tests')"><span class="nav-icon">📝</span><span>Tests & Marks</span></button>
+      <div class="sidebar-section">Finance</div>
+      <button class="nav-item" onclick="nav('fees')"><span class="nav-icon">💰</span><span>Fee Collection</span></button>
+      <button class="nav-item" onclick="nav('dues')"><span class="nav-icon">⚠️</span><span>Dues Tracker</span></button>
+      <div class="sidebar-section">Tools</div>
+      <button class="nav-item" onclick="nav('communicate')"><span class="nav-icon">💬</span><span>WhatsApp</span></button>
+      <button class="nav-item" onclick="nav('promotions')"><span class="nav-icon">📣</span><span>Promotions</span></button>
+      <button class="nav-item" onclick="nav('settings')"><span class="nav-icon">⚙️</span><span>Settings</span></button>
+    </div>
+    <div id="student-sidebar-nav" style="display:none">
+      <div class="sidebar-section">My Portal</div>
+      <button class="nav-item active" onclick="nav('sp-home')"><span class="nav-icon">🏠</span><span>Home</span></button>
+      <button class="nav-item" onclick="nav('sp-attendance')"><span class="nav-icon">📋</span><span>Attendance</span></button>
+      <button class="nav-item" onclick="nav('sp-tests')"><span class="nav-icon">📝</span><span>My Results</span></button>
+      <button class="nav-item" onclick="nav('sp-fees')"><span class="nav-icon">💰</span><span>My Fees</span></button>
+      <button class="nav-item" onclick="nav('sp-notices')"><span class="nav-icon">📢</span><span>Notices</span></button>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="avatar" id="sb-avatar">A</div>
+        <div class="info"><div class="uname" id="sb-name">Admin</div><div class="urole" id="sb-role">Administrator</div></div>
+      </div>
+      <button class="logout-btn" onclick="logout()">↩ Logout</button>
+    </div>
+  </div>
+
+  <!-- Main area -->
+  <div class="desktop-layout">
+    <div class="topbar">
+      <button class="topbar-menu" onclick="toggleSidebar()">☰</button>
+      <h1 id="page-title">Dashboard</h1>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" id="top-action-btn" onclick="topAction()" style="display:none">+ Add</button>
+        <button class="btn btn-sm" id="logout-topbar" onclick="logout()">↩</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+<!-- ── DASHBOARD ── -->
+<div id="page-dashboard" class="page active">
+  <div class="grid4 mb16">
+    <div class="stat-card"><div class="stat-val blue" id="d-students">0</div><div class="stat-label">Students</div><div class="stat-sub green" id="d-active">0 active</div></div>
+    <div class="stat-card"><div class="stat-val green" id="d-att">—</div><div class="stat-label">Attendance</div><div class="stat-sub muted" id="d-att-sub">today</div></div>
+    <div class="stat-card"><div class="stat-val amber" id="d-dues">₹0</div><div class="stat-label">Dues</div><div class="stat-sub red" id="d-overdue">0 overdue</div></div>
+    <div class="stat-card"><div class="stat-val purple" id="d-leads">0</div><div class="stat-label">Leads</div></div>
+  </div>
+  <div class="grid2 mb16">
+    <div class="card"><div class="sec-head"><h2>Recent Students</h2><button class="btn btn-sm" onclick="nav('students')">All</button></div><div id="dash-students"></div></div>
+    <div class="card"><div class="sec-head"><h2>Fee Alerts</h2><button class="btn btn-sm" onclick="nav('dues')">All</button></div><div id="dash-dues"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="sec-head"><h2>Batches</h2></div><div id="dash-batches"></div></div>
+    <div class="card"><div class="sec-head"><h2>Quick Actions</h2></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-full" onclick="nav('attendance')">📋 Mark Attendance</button>
+        <button class="btn btn-full" onclick="nav('fees')">💰 Collect Fee</button>
+        <button class="btn btn-full btn-wa" onclick="nav('communicate')">💬 Send WhatsApp</button>
+        <button class="btn btn-full" onclick="openModal('modal-student')">➕ Add Student</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── STUDENTS ── -->
+<div id="page-students" class="page">
+  <div class="flex gap8 mb12 items-center" style="flex-wrap:wrap">
+    <select id="filter-batch-s" onchange="renderStudents()" style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;flex:1;min-width:120px">
+      <option value="">All Batches</option>
+    </select>
+    <select id="filter-status-s" onchange="renderStudents()" style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px">
+      <option value="">All</option><option value="active">Active</option><option value="inactive">Inactive</option>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-student')">+ Add</button>
+  </div>
+  <!-- Mobile student cards -->
+  <div id="students-cards" class="mb12"></div>
+  <!-- Desktop table -->
+  <div class="tbl-wrap" style="display:none" id="students-table-wrap">
+    <table><thead><tr><th>Student</th><th>Phone</th><th>Batch</th><th>Fees</th><th>Att.</th><th>Status</th><th></th></tr></thead>
+    <tbody id="students-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- ── LEADS ── -->
+<div id="page-leads" class="page">
+  <div class="sec-head mb0"><span></span><button class="btn btn-primary btn-sm" onclick="openModal('modal-lead')">+ Lead</button></div>
+  <div class="kanban mt12" id="leads-kanban"></div>
+</div>
+
+<!-- ── BATCHES ── -->
+<div id="page-batches" class="page">
+  <div class="sec-head"><span></span><button class="btn btn-primary btn-sm" onclick="openModal('modal-batch')">+ Batch</button></div>
+  <div class="grid3" id="batches-grid"></div>
+</div>
+
+<!-- ── ATTENDANCE ── -->
+<div id="page-attendance" class="page">
+  <div class="card mb12">
+    <div class="flex gap8 items-center" style="flex-wrap:wrap">
+      <div style="flex:1;min-width:140px"><label class="small bold mb8" style="display:block">Batch</label>
+        <select id="att-batch" onchange="loadAttStudents()" style="width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--border);font-size:13px"></select>
+      </div>
+      <div><label class="small bold mb8" style="display:block">Date</label>
+        <input type="date" id="att-date" style="padding:9px 11px;border-radius:9px;border:1px solid var(--border);font-size:13px"/>
+      </div>
+    </div>
+    <div class="flex gap8 mt12">
+      <button class="btn btn-green btn-sm" onclick="markAll('P')">All Present</button>
+      <button class="btn btn-red btn-sm" onclick="markAll('A')">All Absent</button>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="submitAtt()">✓ Save</button>
+    </div>
+  </div>
+  <div id="att-list" class="card mb12" style="display:none">
+    <div class="sec-head"><h2 id="att-batch-name">Students</h2></div>
+    <div id="att-students"></div>
+  </div>
+  <div class="card">
+    <div class="sec-head"><h2>History</h2><button class="btn btn-sm" onclick="exportAtt()">⬇ CSV</button></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Student</th><th>Batch</th><th>Date</th><th>Status</th></tr></thead><tbody id="att-history"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ── TESTS ── -->
+<div id="page-tests" class="page">
+  <div class="sec-head"><span></span><button class="btn btn-primary btn-sm" onclick="openModal('modal-test')">+ Test</button></div>
+  <div class="grid2 mb12" id="tests-list"></div>
+  <div class="card" id="marks-panel" style="display:none">
+    <div class="sec-head"><h2 id="marks-title">Marks</h2><button class="btn btn-sm btn-green" onclick="saveMarks()">Save</button></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Student</th><th>Marks</th><th>Total</th><th>%</th><th>Grade</th></tr></thead><tbody id="marks-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ── FEES ── -->
+<div id="page-fees" class="page">
+  <div class="grid2 mb12">
+    <div class="card">
+      <div class="sec-head"><h2>Collect Fee</h2></div>
+      <div class="form-group"><label>Student</label><select id="fee-stu" onchange="loadStudentFees()"><option value="">-- Select --</option></select></div>
+      <div id="fee-dues-panel" style="display:none">
+        <div class="sect-label">Pending</div>
+        <div id="fee-dues-list"></div>
+        <hr class="divider"/>
+        <div class="form-row">
+          <div class="form-group"><label>Discount (₹)</label><input type="number" id="fee-disc" value="0" min="0" oninput="calcFeeTotal()"/></div>
+          <div class="form-group"><label>Mode</label><select id="fee-mode"><option>UPI</option><option>Cash</option><option>Bank Transfer</option></select></div>
+        </div>
+        <div class="card-sm mb12" style="background:var(--pl)"><div class="flex items-center" style="justify-content:space-between"><span class="muted small">Total</span><span class="bold" style="font-size:18px;color:var(--primary)" id="fee-total">₹0</span></div></div>
+        <div class="flex gap8">
+          <button class="btn btn-primary" style="flex:1" onclick="collectFee()">✓ Collect</button>
+          <button class="btn btn-wa" onclick="generateUPI()">🔗 UPI</button>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="sec-head"><h2>Receipts</h2></div><div id="recent-receipts"></div></div>
+  </div>
+  <div class="card">
+    <div class="sec-head"><h2>Fee Structures</h2><button class="btn btn-primary btn-sm" onclick="openModal('modal-fee-structure')">+ Add</button></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Type</th><th>Amount</th><th></th></tr></thead><tbody id="fee-structs"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ── DUES ── -->
+<div id="page-dues" class="page">
+  <div class="grid3 mb12">
+    <div class="stat-card"><div class="stat-val amber" id="dues-total">₹0</div><div class="stat-label">Total Pending</div></div>
+    <div class="stat-card"><div class="stat-val red" id="dues-overdue">₹0</div><div class="stat-label">Overdue</div></div>
+    <div class="stat-card"><div class="stat-val green" id="dues-collected">₹0</div><div class="stat-label">This Month</div></div>
+  </div>
+  <div class="flex gap8 mb12 items-center">
+    <select id="dues-filter" onchange="renderDues()" style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px">
+      <option value="all">All</option><option value="pending">Pending</option><option value="overdue">Overdue</option>
+    </select>
+    <button class="btn btn-wa btn-sm" onclick="openWAReminders()">📲 WhatsApp Reminders</button>
+    <button class="btn btn-sm" onclick="exportDues()">⬇ CSV</button>
+  </div>
+  <!-- Mobile cards -->
+  <div id="dues-cards"></div>
+</div>
+
+<!-- ── COMMUNICATE / WHATSAPP ── -->
+<div id="page-communicate" class="page">
+
+  <!-- WhatsApp Connection Status -->
+  <div id="wa-status-section" class="card mb12">
+    <div class="wa-status-bar" id="wa-status-bar">
+      <div class="wa-dot" id="wa-dot"></div>
+      <div style="flex:1">
+        <div class="bold small" id="wa-status-text">WhatsApp Not Connected</div>
+        <div class="muted" style="font-size:11px" id="wa-status-sub">Connect to send real messages</div>
+      </div>
+      <button class="btn btn-sm btn-wa" id="wa-connect-btn" onclick="openWASetup()">Connect</button>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="sec-head"><h2>Send WhatsApp Message</h2></div>
+      <div class="form-group"><label>To</label>
+        <select id="msg-to" onchange="updateMsgPreview()">
+          <option value="all">All Students</option>
+          <option value="batch">Specific Batch</option>
+          <option value="overdue">Overdue Fee Students</option>
+          <option value="custom">Custom Number</option>
+        </select>
+      </div>
+      <div id="msg-batch-div" style="display:none" class="form-group"><label>Batch</label><select id="msg-batch"></select></div>
+      <div id="msg-custom-div" style="display:none" class="form-group"><label>Phone Number</label><input type="tel" id="msg-custom-phone" placeholder="10-digit number" inputmode="numeric"/></div>
+      <div class="form-group"><label>Template</label>
+        <select id="msg-template" onchange="loadTemplate()">
+          <option value="">Custom</option>
+          <option value="fee_reminder">💰 Fee Reminder</option>
+          <option value="attendance_alert">📋 Attendance Alert</option>
+          <option value="test_result">📝 Test Result</option>
+          <option value="holiday">📢 Holiday Notice</option>
+          <option value="new_batch">🎓 New Batch</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Message</label><textarea id="msg-body" rows="5" placeholder="Type your WhatsApp message..."></textarea></div>
+      <div class="msg-preview-bubble" id="msg-preview-bubble" style="display:none"></div>
+      <div id="msg-recipient-info" class="small muted mb8"></div>
+      <button class="btn btn-wa btn-full" onclick="sendWhatsApp()" style="font-size:14px;padding:12px">
+        <span style="font-size:18px">💬</span> Send via WhatsApp
+      </button>
+    </div>
+    <div class="card">
+      <div class="sec-head"><h2>Message Log</h2></div>
+      <div id="msg-log"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROMOTIONS ── -->
+<div id="page-promotions" class="page">
+  <div class="grid2">
+    <div class="card">
+      <div class="sec-head"><h2>Create Post</h2></div>
+      <div class="form-group"><label>Template</label><select id="promo-tpl" onchange="updatePromo()"><option value="new_batch">New Batch</option><option value="results">Results</option><option value="offer">Offer</option><option value="holiday">Holiday</option></select></div>
+      <div class="form-group"><label>Institute Name</label><input type="text" id="promo-inst" oninput="updatePromo()"/></div>
+      <div class="form-group"><label>Main Text</label><input type="text" id="promo-main" oninput="updatePromo()"/></div>
+      <div class="form-group"><label>Subtitle</label><input type="text" id="promo-sub" oninput="updatePromo()"/></div>
+      <div class="form-group"><label>Contact</label><input type="text" id="promo-contact" value="📞 98765 43210" oninput="updatePromo()"/></div>
+      <div class="flex gap8 mt8"><button class="btn btn-primary" onclick="downloadPromo()">⬇ PNG</button><button class="btn" onclick="copyPromoText()">📋 Copy Text</button><button class="btn btn-wa" onclick="sharePromoWA()">💬 Share</button></div>
+    </div>
+    <div class="card">
+      <div class="sec-head"><h2>Preview</h2></div>
+      <canvas id="promo-canvas" width="400" height="400" style="width:100%;border-radius:10px;border:1px solid var(--border)"></canvas>
+      <div class="card-sm mt12" style="background:var(--bg)"><div class="small muted mb8">Text version</div><div id="promo-text" style="font-size:13px;white-space:pre-line"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SETTINGS ── -->
+<div id="page-settings" class="page">
+  <div class="grid2">
+    <div class="card">
+      <div class="sec-head"><h2>Institute Settings</h2></div>
+      <div class="form-group"><label>Institute Name</label><input type="text" id="set-name"/></div>
+      <div class="form-group"><label>Phone</label><input type="text" id="set-phone"/></div>
+      <div class="form-group"><label>Address</label><input type="text" id="set-address"/></div>
+      <button class="btn btn-primary btn-full" onclick="saveSettings()">Save</button>
+    </div>
+    <div class="card">
+      <div class="sec-head"><h2>Change Password</h2></div>
+      <div class="form-group"><label>Current Password</label><input type="password" id="p-old"/></div>
+      <div class="form-group"><label>New Password</label><input type="password" id="p-new"/></div>
+      <div class="form-group"><label>Confirm</label><input type="password" id="p-confirm"/></div>
+      <button class="btn btn-primary btn-full" onclick="changePass()">Change</button>
+      <div id="pass-msg" class="mt8 small"></div>
+    </div>
+  </div>
+  <div class="card mt16">
+    <div class="sec-head"><h2>Data</h2></div>
+    <div class="settings-row"><div class="info"><div class="bold">Export All</div><div class="muted">CSV download</div></div><button class="btn btn-sm" onclick="exportAll()">⬇ Export</button></div>
+    <div class="settings-row"><div class="info"><div class="bold">Backup</div><div class="muted">Copy JSON to clipboard</div></div><button class="btn btn-sm" onclick="backupData()">📋 Backup</button></div>
+    <div class="settings-row"><div class="info"><div class="bold red">Clear All Data</div><div class="muted">Permanent delete</div></div><button class="btn btn-sm btn-red" onclick="clearData()">Clear</button></div>
+  </div>
+</div>
+
+<!-- ══════ STUDENT PORTAL ══════ -->
+<div id="page-sp-home" class="page">
+  <div class="sp-header">
+    <div class="flex gap12 items-center mb8">
+      <div class="avatar" id="sp-av" style="width:44px;height:44px;font-size:16px;background:rgba(255,255,255,.25);color:#fff"></div>
+      <div><h2 id="sp-name">Student</h2><p id="sp-batch">Loading...</p></div>
+    </div>
+    <div class="sp-stat-row">
+      <div class="sp-stat"><div class="sp-stat-val" id="sp-att-h">—</div><div class="sp-stat-label">Attendance</div></div>
+      <div class="sp-stat"><div class="sp-stat-val" id="sp-score-h">—</div><div class="sp-stat-label">Last Test</div></div>
+      <div class="sp-stat"><div class="sp-stat-val" id="sp-due-h">₹0</div><div class="sp-stat-label">Due</div></div>
+    </div>
+  </div>
+  <div id="sp-alert"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="sec-head"><h2>Quick Links</h2></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-full" onclick="nav('sp-attendance')">📋 Attendance</button>
+        <button class="btn btn-full" onclick="nav('sp-tests')">📝 Test Results</button>
+        <button class="btn btn-full" onclick="nav('sp-fees')">💰 My Fees</button>
+        <button class="btn btn-full" onclick="nav('sp-notices')">📢 Notices</button>
+      </div>
+    </div>
+    <div class="card"><div class="sec-head"><h2>Schedule</h2></div><div id="sp-schedule"></div></div>
+  </div>
+</div>
+
+<div id="page-sp-attendance" class="page">
+  <div class="card mb12">
+    <div class="grid3 mb12" style="gap:8px">
+      <div class="card-sm" style="text-align:center"><div class="stat-val green" id="sp-present">0</div><div class="stat-label">Present</div></div>
+      <div class="card-sm" style="text-align:center"><div class="stat-val red" id="sp-absent">0</div><div class="stat-label">Absent</div></div>
+      <div class="card-sm" style="text-align:center"><div class="stat-val amber" id="sp-pct">—</div><div class="stat-label">%</div></div>
+    </div>
+    <div class="sect-label">Last 28 Days</div>
+    <div class="cal-grid" id="sp-cal"></div>
+  </div>
+  <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Batch</th><th>Status</th></tr></thead><tbody id="sp-att-rows"></tbody></table></div>
+</div>
+
+<div id="page-sp-tests" class="page">
+  <div class="card mb12"><div class="sec-head"><h2>My Results</h2></div><div id="sp-chart"></div><div id="sp-test-rows"></div></div>
+</div>
+
+<div id="page-sp-fees" class="page">
+  <div class="card mb12"><div class="sec-head"><h2>Fee Status</h2></div><div id="sp-fee-rows"></div></div>
+  <div class="card"><div class="sec-head"><h2>Payment History</h2></div><div id="sp-receipt-rows"></div></div>
+</div>
+
+<div id="page-sp-notices" class="page">
+  <div class="card"><div class="sec-head"><h2>Notices</h2></div><div id="sp-notices"></div></div>
+</div>
+
+    </div><!-- content -->
+  </div><!-- desktop-layout -->
+
+  <!-- Bottom Nav (mobile) -->
+  <div class="bottom-nav" id="bottom-nav-admin">
+    <button class="bn-item active" onclick="nav('dashboard')"><div class="bn-icon">🏠</div><span>Home</span></button>
+    <button class="bn-item" onclick="nav('students')"><div class="bn-icon">🎓</div><span>Students</span></button>
+    <button class="bn-item" onclick="nav('attendance')"><div class="bn-icon">📋</div><span>Attend.</span></button>
+    <button class="bn-item" onclick="nav('fees')"><div class="bn-icon">💰</div><span>Fees</span></button>
+    <button class="bn-item" onclick="nav('communicate')"><div class="bn-icon">💬</div><span>WhatsApp</span></button>
+  </div>
+  <div class="bottom-nav" id="bottom-nav-student" style="display:none">
+    <button class="bn-item active" onclick="nav('sp-home')"><div class="bn-icon">🏠</div><span>Home</span></button>
+    <button class="bn-item" onclick="nav('sp-attendance')"><div class="bn-icon">📋</div><span>Attend.</span></button>
+    <button class="bn-item" onclick="nav('sp-tests')"><div class="bn-icon">📝</div><span>Results</span></button>
+    <button class="bn-item" onclick="nav('sp-fees')"><div class="bn-icon">💰</div><span>Fees</span></button>
+    <button class="bn-item" onclick="nav('sp-notices')"><div class="bn-icon">📢</div><span>Notices</span></button>
+  </div>
+</div><!-- #app -->
+
+<!-- ═══ MODALS ═══ -->
+
+<div class="modal-overlay" id="modal-student">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modal-student')"></div>
+    <div class="modal-head"><h3>Add Student</h3><button class="btn-ghost" onclick="closeModal('modal-student')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-group"><label>Full Name *</label><input type="text" id="s-name"/></div><div class="form-group"><label>Phone * (login ID)</label><input type="tel" id="s-phone" inputmode="numeric"/></div></div>
+      <div class="form-row"><div class="form-group"><label>Guardian Name</label><input type="text" id="s-guardian"/></div><div class="form-group"><label>Guardian Phone</label><input type="tel" id="s-gphone" inputmode="numeric"/></div></div>
+      <div class="form-row"><div class="form-group"><label>Batch</label><select id="s-batch"><option value="">None</option></select></div><div class="form-group"><label>Fee Structure</label><select id="s-fstruct"><option value="">None</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label>Enrollment Date</label><input type="date" id="s-enroll"/></div><div class="form-group"><label>Status</label><select id="s-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div></div>
+      <div class="notice blue" style="font-size:12px">📱 Student logs in with their phone number</div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('modal-student')">Cancel</button><button class="btn btn-primary" onclick="addStudent()">Add Student</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-lead">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modal-lead')"></div>
+    <div class="modal-head"><h3>Add Lead</h3><button class="btn-ghost" onclick="closeModal('modal-lead')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-group"><label>Name *</label><input type="text" id="l-name"/></div><div class="form-group"><label>Phone *</label><input type="tel" id="l-phone" inputmode="numeric"/></div></div>
+      <div class="form-row"><div class="form-group"><label>Course Interest</label><input type="text" id="l-course"/></div><div class="form-group"><label>Source</label><select id="l-source"><option>Walk-in</option><option>Social Media</option><option>Referral</option><option>Phone</option></select></div></div>
+      <div class="form-group"><label>Notes</label><textarea id="l-notes" rows="2"></textarea></div>
+      <div class="form-row"><div class="form-group"><label>Follow-up Date</label><input type="date" id="l-followup"/></div><div class="form-group"><label>Status</label><select id="l-status"><option value="new">New</option><option value="contacted">Contacted</option><option value="followup">Follow-up</option></select></div></div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('modal-lead')">Cancel</button><button class="btn btn-primary" onclick="addLead()">Add Lead</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-batch">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modal-batch')"></div>
+    <div class="modal-head"><h3>Add Batch</h3><button class="btn-ghost" onclick="closeModal('modal-batch')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-group"><label>Batch Name *</label><input type="text" id="b-name"/></div><div class="form-group"><label>Subject</label><input type="text" id="b-subject"/></div></div>
+      <div class="form-row"><div class="form-group"><label>Teacher</label><input type="text" id="b-teacher"/></div><div class="form-group"><label>Capacity</label><input type="number" id="b-cap" value="30"/></div></div>
+      <div class="form-row"><div class="form-group"><label>Days</label><input type="text" id="b-days" placeholder="Mon, Wed, Fri"/></div><div class="form-group"><label>Time</label><input type="text" id="b-time" placeholder="4:00-5:30 PM"/></div></div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('modal-batch')">Cancel</button><button class="btn btn-primary" onclick="addBatch()">Add</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-test">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modal-test')"></div>
+    <div class="modal-head"><h3>Create Test</h3><button class="btn-ghost" onclick="closeModal('modal-test')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Title *</label><input type="text" id="t-title"/></div>
+      <div class="form-row"><div class="form-group"><label>Batch *</label><select id="t-batch"><option value="">-- Select --</option></select></div><div class="form-group"><label>Total Marks</label><input type="number" id="t-total" value="100"/></div></div>
+      <div class="form-group"><label>Date</label><input type="date" id="t-date"/></div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('modal-test')">Cancel</button><button class="btn btn-primary" onclick="addTest()">Create</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-fee-structure">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modal-fee-structure')"></div>
+    <div class="modal-head"><h3>Add Fee Structure</h3><button class="btn-ghost" onclick="closeModal('modal-fee-structure')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Name *</label><input type="text" id="fs-name"/></div>
+      <div class="form-row"><div class="form-group"><label>Type</label><select id="fs-type"><option value="monthly">Monthly</option><option value="course">Course</option><option value="onetime">One-time</option></select></div><div class="form-group"><label>Amount (₹) *</label><input type="number" id="fs-amount" inputmode="numeric"/></div></div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('modal-fee-structure')">Cancel</button><button class="btn btn-primary" onclick="addFeeStruct()">Add</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-receipt">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modal-receipt')"></div>
+    <div class="modal-head"><h3>Receipt</h3><button class="btn-ghost" onclick="closeModal('modal-receipt')">✕</button></div>
+    <div class="modal-body" id="receipt-body"></div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('modal-receipt')">Close</button><button class="btn btn-primary" onclick="window.print()">🖨 Print</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-upi">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modal-upi')"></div>
+    <div class="modal-head"><h3>UPI Payment Link</h3><button class="btn-ghost" onclick="closeModal('modal-upi')">✕</button></div>
+    <div class="modal-body" style="text-align:center">
+      <div style="font-size:60px;margin-bottom:12px">📱</div>
+      <div class="bold mb8" id="upi-amt-text"></div>
+      <div class="card-sm mb12" style="background:var(--bg);text-align:left"><code id="upi-link" style="font-size:11px;word-break:break-all"></code></div>
+      <button class="btn btn-wa btn-full mb8" onclick="shareUPIOnWA()">💬 Send on WhatsApp</button>
+      <button class="btn btn-full" onclick="copyUPI()">📋 Copy Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- WhatsApp Setup Modal -->
+<div class="modal-overlay" id="modal-wa-setup">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-handle" onclick="closeModal('modal-wa-setup')"></div>
+    <div class="modal-head"><h3>Connect WhatsApp</h3><button class="btn-ghost" onclick="closeModal('modal-wa-setup')">✕</button></div>
+    <div class="modal-body">
+
+      <!-- Steps -->
+      <div class="progress-steps mb16">
+        <div class="ps-dot active" id="ws-dot-1">1</div>
+        <div class="ps" id="ws-bar-1"></div>
+        <div class="ps-dot" id="ws-dot-2">2</div>
+        <div class="ps" id="ws-bar-2"></div>
+        <div class="ps-dot" id="ws-dot-3">3</div>
+      </div>
+
+      <!-- Step 1: Choose method -->
+      <div id="wa-step-1">
+        <div class="bold mb8" style="font-size:15px">How do you want to connect?</div>
+        <div class="muted small mb16">Choose the best method for your institute</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="card" style="cursor:pointer;border-color:var(--wa)" onclick="selectWAMethod('web')">
+            <div class="flex gap10 items-center">
+              <div style="font-size:28px">💻</div>
+              <div>
+                <div class="bold">WhatsApp Web (Recommended)</div>
+                <div class="small muted">Open WhatsApp Web in a new tab. Messages send directly from your WhatsApp number. Works on desktop browser.</div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="selectWAMethod('wame')">
+            <div class="flex gap10 items-center">
+              <div style="font-size:28px">📱</div>
+              <div>
+                <div class="bold">wa.me Links (Mobile friendly)</div>
+                <div class="small muted">Each message opens WhatsApp with pre-filled text. Works on phone. One click per student.</div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer;opacity:.7">
+            <div class="flex gap10 items-center">
+              <div style="font-size:28px">🔗</div>
+              <div>
+                <div class="bold">Official API (Coming soon)</div>
+                <div class="small muted">Meta Business API for automated bulk sending. Requires business verification.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: QR / Instructions -->
+      <div id="wa-step-2" style="display:none">
+        <div id="wa-web-instructions" style="display:none">
+          <div class="wa-qr-box">
+            <div style="font-size:48px;margin-bottom:12px">📷</div>
+            <div class="bold mb8">Scan with WhatsApp</div>
+            <div class="muted small mb16">Open WhatsApp on your phone → tap the three dots → Linked devices → Link a device → scan this QR</div>
+            <button class="btn btn-wa btn-full" onclick="openWAWeb()">Open WhatsApp Web →</button>
+          </div>
+          <ol class="wa-instructions">
+            <li>Click "Open WhatsApp Web" above</li>
+            <li>On your phone: WhatsApp → Menu (⋮) → Linked Devices → Link a Device</li>
+            <li>Scan the QR code shown in the browser</li>
+            <li>Keep the browser tab open while using this tool</li>
+          </ol>
+        </div>
+        <div id="wa-wame-instructions" style="display:none">
+          <div class="notice wa">
+            <div class="bold mb8">📱 wa.me Link Mode Active</div>
+            When you send a message, each student's number will open in WhatsApp with the message pre-filled. You just tap Send.
+          </div>
+          <ol class="wa-instructions mt12">
+            <li>Click "Send WhatsApp" in the communicate screen</li>
+            <li>WhatsApp opens with message pre-filled for each student</li>
+            <li>Tap Send for each student</li>
+            <li>For bulk: a list of links opens, tap each one</li>
+          </ol>
+          <button class="btn btn-wa btn-full mt12" onclick="confirmWAMethod()">✓ Use wa.me Links</button>
+        </div>
+        <div class="flex gap8 mt16">
+          <button class="btn" onclick="waStep(1)">← Back</button>
+          <button class="btn btn-primary" id="wa-next-btn" onclick="waStep(3)" style="flex:1">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Done -->
+      <div id="wa-step-3" style="display:none;text-align:center">
+        <div style="font-size:56px;margin-bottom:16px">✅</div>
+        <div class="bold" style="font-size:17px;margin-bottom:8px">WhatsApp Connected!</div>
+        <div class="muted small mb16" id="wa-done-msg">You can now send WhatsApp messages directly from this tool.</div>
+        <button class="btn btn-wa btn-full" onclick="closeModal('modal-wa-setup')">Start Sending Messages</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- WhatsApp Reminders Modal -->
+<div class="modal-overlay" id="modal-wa-reminders">
+  <div class="modal">
+    <div class="modal-handle" onclick="closeModal('modal-wa-reminders')"></div>
+    <div class="modal-head"><h3>Send Fee Reminders via WhatsApp</h3><button class="btn-ghost" onclick="closeModal('modal-wa-reminders')">✕</button></div>
+    <div class="modal-body">
+      <div class="notice wa mb12" id="wa-reminder-method-notice"></div>
+      <div class="form-group"><label>Message Template</label>
+        <textarea id="reminder-msg" rows="5"></textarea>
+      </div>
+      <div class="sect-label">Students with Dues (<span id="reminder-count">0</span>)</div>
+      <div id="reminder-list" style="max-height:280px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-wa-reminders')">Cancel</button>
+      <button class="btn btn-wa" onclick="sendAllReminders()">💬 Send to All</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+let DB={students:[],leads:[],batches:[],attendance:[],tests:[],testResults:[],fees:[],feeStructures:[],messages:[],receipts:[],settings:{instituteName:'Bright Future Academy',phone:'98765 43210',address:'',adminPassword:'admin123'},waConfig:{method:null,connected:false}};
+let CU=null; // current user
+
+function loadDB(){
+  const s=localStorage.getItem('tp_v3');
+  if(s){try{DB={...DB,...JSON.parse(s)};}catch(e){}}
+  if(!DB.students.length)seedData();
+}
+function saveDB(){localStorage.setItem('tp_v3',JSON.stringify(DB));}
+
+function seedData(){
+  DB.batches=[{id:'b1',name:'Maths Batch A',subject:'Mathematics',teacher:'Mr. Sharma',days:'Mon,Wed,Fri',time:'4:00-5:30PM',capacity:30},{id:'b2',name:'Science Batch B',subject:'Science',teacher:'Ms. Verma',days:'Tue,Thu,Sat',time:'5:00-6:30PM',capacity:25},{id:'b3',name:'English Batch',subject:'English',teacher:'Mr. Singh',days:'Mon-Sat',time:'7:00-8:00AM',capacity:20}];
+  DB.feeStructures=[{id:'fs1',name:'Monthly - Maths',type:'monthly',amount:1200},{id:'fs2',name:'Monthly - Science',type:'monthly',amount:1000},{id:'fs3',name:'Course - English',type:'course',amount:5000}];
+  DB.students=[{id:'s1',name:'Riya Sharma',phone:'9876543210',guardian:'Ramesh Sharma',guardianPhone:'9876543211',batch:'b1',feeStruct:'fs1',status:'active',enroll:'2024-06-01'},{id:'s2',name:'Aarav Mehta',phone:'9876543220',guardian:'Anil Mehta',guardianPhone:'9876543221',batch:'b1',feeStruct:'fs1',status:'active',enroll:'2024-06-01'},{id:'s3',name:'Priya Joshi',phone:'9876543230',guardian:'Sunita Joshi',guardianPhone:'9876543231',batch:'b2',feeStruct:'fs2',status:'active',enroll:'2024-07-01'},{id:'s4',name:'Rohan Gupta',phone:'9876543240',guardian:'Vijay Gupta',guardianPhone:'9876543241',batch:'b2',feeStruct:'fs2',status:'active',enroll:'2024-07-15'},{id:'s5',name:'Ananya Singh',phone:'9876543250',guardian:'Rakesh Singh',guardianPhone:'9876543251',batch:'b3',feeStruct:'fs3',status:'active',enroll:'2024-08-01'}];
+  DB.leads=[{id:'l1',name:'Kavya Nair',phone:'9000000001',course:'Maths',source:'Walk-in',status:'new',notes:'Weekend batch',followup:'2025-05-10'},{id:'l2',name:'Arjun Das',phone:'9000000002',course:'Science',source:'Referral',status:'contacted',notes:'Visiting Saturday',followup:'2025-05-08'}];
+  DB.fees=[{id:'f1',studentId:'s1',structId:'fs1',desc:'April 2025',amount:1200,discount:0,paid:0,status:'pending',due:'2025-04-05',paidDate:'',txn:''},{id:'f2',studentId:'s1',structId:'fs1',desc:'March 2025',amount:1200,discount:0,paid:0,status:'overdue',due:'2025-03-05',paidDate:'',txn:''},{id:'f3',studentId:'s2',structId:'fs1',desc:'April 2025',amount:1200,discount:0,paid:1200,status:'paid',due:'2025-04-05',paidDate:'2025-04-03',txn:'TXN001'},{id:'f4',studentId:'s3',structId:'fs2',desc:'April 2025',amount:1000,discount:0,paid:0,status:'pending',due:'2025-04-07',paidDate:'',txn:''},{id:'f5',studentId:'s4',structId:'fs2',desc:'March 2025',amount:1000,discount:100,paid:0,status:'overdue',due:'2025-03-07',paidDate:'',txn:''},{id:'f6',studentId:'s5',structId:'fs3',desc:'Course Fee',amount:5000,discount:500,paid:0,status:'pending',due:'2025-05-01',paidDate:'',txn:''}];
+  const today=new Date().toISOString().split('T')[0];
+  DB.attendance=[{id:'a1',studentId:'s1',batchId:'b1',date:today,status:'P'},{id:'a2',studentId:'s2',batchId:'b1',date:today,status:'A'},{id:'a3',studentId:'s3',batchId:'b2',date:today,status:'P'},{id:'a4',studentId:'s4',batchId:'b2',date:today,status:'P'},{id:'a5',studentId:'s5',batchId:'b3',date:today,status:'L'}];
+  DB.tests=[{id:'t1',title:'Unit Test 1',batchId:'b1',total:100,date:'2025-04-10'},{id:'t2',title:'Mid-term',batchId:'b2',total:50,date:'2025-04-15'}];
+  DB.testResults=[{id:'tr1',testId:'t1',studentId:'s1',marks:82},{id:'tr2',testId:'t1',studentId:'s2',marks:65},{id:'tr3',testId:'t2',studentId:'s3',marks:38},{id:'tr4',testId:'t2',studentId:'s4',marks:42}];
+  DB.messages=[];DB.receipts=[];
+  saveDB();
+}
+
+// ═══════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════
+function switchLTab(role,el){
+  document.querySelectorAll('.l-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.l-form').forEach(f=>f.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(role+'-lf').classList.add('active');
+  document.getElementById('admin-err').textContent='';
+  document.getElementById('student-err').textContent='';
+}
+function adminLogin(){
+  const p=document.getElementById('admin-pass').value;
+  if(!p){document.getElementById('admin-err').textContent='Enter password';return;}
+  if(p!==DB.settings.adminPassword){document.getElementById('admin-err').textContent='Wrong password. Default: admin123';return;}
+  CU={role:'admin'};startApp();
+}
+function studentLogin(){
+  const ph=document.getElementById('student-phone').value.trim();
+  if(!ph||ph.length<10){document.getElementById('student-err').textContent='Enter valid 10-digit number';return;}
+  const s=DB.students.find(x=>x.phone===ph&&x.status==='active');
+  if(!s){document.getElementById('student-err').textContent='No student with this number. Contact institute.';return;}
+  CU={role:'student',sid:s.id};startApp();
+}
+function startApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  if(CU.role==='admin'){
+    document.getElementById('admin-sidebar-nav').style.display='block';
+    document.getElementById('student-sidebar-nav').style.display='none';
+    document.getElementById('bottom-nav-admin').style.display='flex';
+    document.getElementById('bottom-nav-student').style.display='none';
+    document.getElementById('sb-avatar').textContent='A';
+    document.getElementById('sb-avatar').style.background='var(--pl)';
+    document.getElementById('sb-name').textContent='Admin';
+    document.getElementById('sb-role').textContent='Administrator';
+    document.getElementById('inst-name-sb').textContent=DB.settings.instituteName||'Institute';
+    document.getElementById('top-action-btn').style.display='';
+    updateWAStatus();
+    nav('dashboard');
+  } else {
+    const s=DB.students.find(x=>x.id===CU.sid);
+    document.getElementById('admin-sidebar-nav').style.display='none';
+    document.getElementById('student-sidebar-nav').style.display='block';
+    document.getElementById('bottom-nav-admin').style.display='none';
+    document.getElementById('bottom-nav-student').style.display='flex';
+    document.getElementById('sb-avatar').textContent=s?initials(s.name):'S';
+    document.getElementById('sb-avatar').style.background='var(--gl)';
+    document.getElementById('sb-name').textContent=s?s.name:'Student';
+    document.getElementById('sb-role').textContent='Student';
+    document.getElementById('top-action-btn').style.display='none';
+    document.getElementById('inst-name-sb').textContent=DB.settings.instituteName||'Institute';
+    nav('sp-home');
+  }
+}
+function logout(){
+  CU=null;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('admin-pass').value='';
+  document.getElementById('student-phone').value='';
+}
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  sb.classList.toggle('mobile-open');
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function nav(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item,.bn-item').forEach(n=>n.classList.remove('active'));
+  const pg=document.getElementById('page-'+page);
+  if(pg)pg.classList.add('active');
+  document.querySelectorAll(`[onclick="nav('${page}')"]`).forEach(el=>el.classList.add('active'));
+  const titles={dashboard:'Dashboard',students:'Students',leads:'Leads',batches:'Batches',attendance:'Attendance',tests:'Tests & Marks',fees:'Fee Collection',dues:'Dues Tracker',communicate:'WhatsApp',promotions:'Promotions',settings:'Settings','sp-home':'My Dashboard','sp-attendance':'My Attendance','sp-tests':'My Results','sp-fees':'My Fees','sp-notices':'Notices'};
+  document.getElementById('page-title').textContent=titles[page]||page;
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  renderPage(page);
+}
+function renderPage(p){
+  if(p==='dashboard')renderDash();
+  else if(p==='students')renderStudents();
+  else if(p==='leads')renderLeads();
+  else if(p==='batches')renderBatches();
+  else if(p==='attendance')initAtt();
+  else if(p==='tests')renderTests();
+  else if(p==='fees')initFees();
+  else if(p==='dues')renderDues();
+  else if(p==='communicate')initCommunicate();
+  else if(p==='promotions')initPromo();
+  else if(p==='settings')loadSettings();
+  else if(p==='sp-home')renderSPHome();
+  else if(p==='sp-attendance')renderSPAtt();
+  else if(p==='sp-tests')renderSPTests();
+  else if(p==='sp-fees')renderSPFees();
+  else if(p==='sp-notices')renderSPNotices();
+}
+function topAction(){
+  const a=document.querySelector('.page.active')?.id?.replace('page-','');
+  const map={students:'modal-student',leads:'modal-lead',batches:'modal-batch',tests:'modal-test',fees:'modal-fee-structure'};
+  if(map[a])openModal(map[a]);else openModal('modal-student');
+}
+
+// ═══════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════
+function renderDash(){
+  const act=DB.students.filter(s=>s.status==='active').length;
+  document.getElementById('d-students').textContent=DB.students.length;
+  document.getElementById('d-active').textContent=act+' active';
+  const today=new Date().toISOString().split('T')[0],ta=DB.attendance.filter(a=>a.date===today);
+  if(ta.length){const p=Math.round(ta.filter(a=>a.status==='P').length/ta.length*100);document.getElementById('d-att').textContent=p+'%';document.getElementById('d-att-sub').textContent=ta.length+' marked';}
+  const pend=DB.fees.filter(f=>f.status!=='paid');
+  document.getElementById('d-dues').textContent='₹'+pend.reduce((s,f)=>s+(f.amount-f.discount-f.paid),0).toLocaleString('en-IN');
+  document.getElementById('d-overdue').textContent=DB.fees.filter(f=>f.status==='overdue').length+' overdue';
+  document.getElementById('d-leads').textContent=DB.leads.filter(l=>l.status!=='enrolled').length;
+  document.getElementById('dash-students').innerHTML=[...DB.students].slice(-5).reverse().map(s=>`<div class="fee-row"><div class="flex gap8 items-center"><div class="avatar">${initials(s.name)}</div><div><div class="bold small">${s.name}</div><div class="muted" style="font-size:11px">${bName(s.batch)}</div></div></div><span class="badge ${s.status==='active'?'badge-green':'badge-gray'}">${s.status}</span></div>`).join('');
+  document.getElementById('dash-dues').innerHTML=DB.fees.filter(f=>f.status!=='paid').slice(0,4).map(f=>{const s=getStu(f.studentId);return`<div class="fee-row"><div><div class="bold small">${s?s.name:'?'}</div><div class="muted" style="font-size:11px">${f.desc}</div></div><span class="badge ${f.status==='overdue'?'badge-red':'badge-amber'}">₹${(f.amount-f.discount).toLocaleString('en-IN')}</span></div>`;}).join('')||'<div class="muted small">No dues</div>';
+  document.getElementById('dash-batches').innerHTML=DB.batches.map(b=>{const c=DB.students.filter(s=>s.batch===b.id&&s.status==='active').length,p=Math.min(100,Math.round(c/b.capacity*100));return`<div class="mb12"><div class="flex items-center" style="justify-content:space-between;margin-bottom:4px"><span class="bold small">${b.name}</span><span class="muted small">${c}/${b.capacity}</span></div><div class="progress"><div class="progress-bar ${p>80?'amber':''}" style="width:${p}%"></div></div><div class="muted" style="font-size:11px;margin-top:3px">${b.days}·${b.time}</div></div>`;}).join('');
+}
+
+// ═══════════════════════════════════════
+// STUDENTS
+// ═══════════════════════════════════════
+function renderStudents(){
+  fillBatchSel('filter-batch-s',true);
+  const fb=document.getElementById('filter-batch-s').value,fs=document.getElementById('filter-status-s').value;
+  let list=DB.students;
+  if(fb)list=list.filter(s=>s.batch===fb);
+  if(fs)list=list.filter(s=>s.status===fs);
+  const isMob=window.innerWidth<768;
+  // Mobile cards view
+  document.getElementById('students-cards').innerHTML=list.map(s=>{
+    const att=stuAttPct(s.id),dues=DB.fees.filter(f=>f.studentId===s.id&&f.status!=='paid'),da=dues.reduce((x,f)=>x+(f.amount-f.discount-f.paid),0);
+    return`<div class="card mb8"><div class="flex gap10 items-center mb8"><div class="avatar" style="width:40px;height:40px;font-size:14px">${initials(s.name)}</div><div style="flex:1"><div class="bold">${s.name}</div><div class="muted small">${s.phone} · ${bName(s.batch)}</div></div><span class="badge ${s.status==='active'?'badge-green':'badge-gray'}">${s.status}</span></div><div class="flex gap8"><span class="badge ${att<75?'badge-red':att>=90?'badge-green':'badge-amber'}">${att}% att.</span><span class="badge ${da>0?'badge-red':'badge-green'}">${da>0?'₹'+da.toLocaleString('en-IN')+' due':'Paid'}</span></div><div class="flex gap8 mt8"><button class="btn btn-sm" style="flex:1" onclick="viewStuFees('${s.id}')">💰 Fee</button><button class="btn btn-sm btn-wa" style="flex:1" onclick="waStudent('${s.id}')">💬 WA</button><button class="btn btn-sm btn-red" onclick="deleteStu('${s.id}')">✕</button></div></div>`;
+  }).join('')||'<div class="card" style="text-align:center;padding:24px;color:var(--muted)">No students. Add your first student!</div>';
+}
+function deleteStu(id){if(!confirm('Delete?'))return;DB.students=DB.students.filter(s=>s.id!==id);saveDB();renderStudents();}
+function viewStuFees(id){nav('fees');setTimeout(()=>{document.getElementById('fee-stu').value=id;loadStudentFees();},100);}
+function waStudent(id){const s=getStu(id);if(!s)return;const msg=encodeURIComponent(`Hi ${s.name}, this is a message from ${DB.settings.instituteName||'your institute'}.`);openWALink(s.phone,msg);}
+
+// ═══════════════════════════════════════
+// LEADS
+// ═══════════════════════════════════════
+function renderLeads(){
+  const cols={new:'🆕 New',contacted:'📞 Contacted',followup:'🔄 Follow-up',enrolled:'✅ Enrolled',lost:'❌ Lost'};
+  document.getElementById('leads-kanban').innerHTML=Object.entries(cols).map(([st,label])=>{
+    const items=DB.leads.filter(l=>l.status===st);
+    return`<div class="k-col"><div class="k-col-head"><span>${label}</span><span class="badge badge-gray">${items.length}</span></div>${items.map(l=>`<div class="k-card"><div class="bold small">${l.name}</div><div class="muted small">${l.phone}·${l.course}</div>${l.followup?`<div class="muted" style="font-size:11px;margin-top:4px">📅${l.followup}</div>`:''}<div class="pill-row">${st!=='enrolled'?`<button class="btn btn-sm badge-green" style="font-size:10px;padding:2px 8px;border:none;background:var(--gl);color:var(--green);border-radius:5px;cursor:pointer" onclick="convertLead('${l.id}')">→ Enroll</button>`:''}<button class="btn btn-sm" style="font-size:10px;padding:2px 7px" onclick="moveLead('${l.id}','${st}')">Move</button><button class="btn btn-sm btn-wa" style="font-size:10px;padding:2px 7px" onclick="waLead('${l.id}')">WA</button></div></div>`).join('')}</div>`;
+  }).join('');
+}
+function moveLead(id,cur){const s=['new','contacted','followup','enrolled','lost'],l=DB.leads.find(x=>x.id===id);if(l){l.status=s[(s.indexOf(cur)+1)%s.length];saveDB();renderLeads();}}
+function convertLead(id){const l=DB.leads.find(x=>x.id===id);if(!l||!confirm('Convert to student?'))return;DB.students.push({id:'s'+Date.now(),name:l.name,phone:l.phone,guardian:'',guardianPhone:'',batch:'',feeStruct:'',status:'active',enroll:new Date().toISOString().split('T')[0]});l.status='enrolled';saveDB();alert('✅ Converted!');renderLeads();}
+function waLead(id){const l=DB.leads.find(x=>x.id===id);if(!l)return;const msg=encodeURIComponent(`Hi ${l.name}, thanks for your interest in ${DB.settings.instituteName||'our institute'}. We'd love to help you with ${l.course}. Please call us at ${DB.settings.phone||'our number'} for more details.`);openWALink(l.phone,msg);}
+
+// ═══════════════════════════════════════
+// BATCHES
+// ═══════════════════════════════════════
+function renderBatches(){
+  document.getElementById('batches-grid').innerHTML=DB.batches.map(b=>{
+    const c=DB.students.filter(s=>s.batch===b.id&&s.status==='active'),p=Math.min(100,Math.round(c.length/b.capacity*100));
+    return`<div class="card"><div class="flex items-center" style="justify-content:space-between;margin-bottom:8px"><div><div class="bold">${b.name}</div><div class="muted small">${b.subject}</div></div><button class="btn-ghost" style="font-size:16px" onclick="deleteBatch('${b.id}')">✕</button></div><div class="small muted mb8">👨‍🏫${b.teacher||'—'}</div><div class="small muted mb8">📅${b.days}·${b.time}</div><div class="flex items-center" style="justify-content:space-between;margin-bottom:4px"><span class="small">Students</span><span class="small bold">${c.length}/${b.capacity}</span></div><div class="progress mb8"><div class="progress-bar ${p>80?'amber':''}" style="width:${p}%"></div></div><div style="display:flex;flex-wrap:wrap;gap:4px">${c.slice(0,4).map(s=>`<span class="badge badge-blue" style="font-size:10px">${s.name.split(' ')[0]}</span>`).join('')}${c.length>4?`<span class="badge badge-gray">+${c.length-4}</span>`:''}</div></div>`;
+  }).join('')+`<div class="card" style="display:flex;align-items:center;justify-content:center;min-height:140px;border-style:dashed;cursor:pointer;color:var(--muted)" onclick="openModal('modal-batch')"><div style="text-align:center;font-size:28px">+<div class="small mt8">Add Batch</div></div></div>`;
+}
+function deleteBatch(id){if(!confirm('Delete?'))return;DB.batches=DB.batches.filter(b=>b.id!==id);DB.students.filter(s=>s.batch===id).forEach(s=>s.batch='');saveDB();renderBatches();}
+
+// ═══════════════════════════════════════
+// ATTENDANCE
+// ═══════════════════════════════════════
+function initAtt(){fillBatchSel('att-batch',false);document.getElementById('att-date').value=new Date().toISOString().split('T')[0];renderAttHist();}
+function loadAttStudents(){
+  const bid=document.getElementById('att-batch').value,panel=document.getElementById('att-list');
+  if(!bid){panel.style.display='none';return;}
+  const b=DB.batches.find(x=>x.id===bid),sts=DB.students.filter(s=>s.batch===bid&&s.status==='active');
+  panel.style.display='block';
+  document.getElementById('att-batch-name').textContent=b.name+' ('+sts.length+')';
+  const date=document.getElementById('att-date').value,ex=DB.attendance.filter(a=>a.batchId===bid&&a.date===date);
+  document.getElementById('att-students').innerHTML=sts.map(s=>{const r=ex.find(a=>a.studentId===s.id),cur=r?r.status:'';return`<div class="att-student"><div class="avatar">${initials(s.name)}</div><div class="att-name">${s.name}</div><div class="att-btns"><button class="att-btn ${cur==='P'?'P':''}" onclick="togAtt(this,'P')" data-sid="${s.id}">P</button><button class="att-btn ${cur==='A'?'A':''}" onclick="togAtt(this,'A')" data-sid="${s.id}">A</button><button class="att-btn ${cur==='L'?'L':''}" onclick="togAtt(this,'L')" data-sid="${s.id}">L</button></div></div>`;}).join('');
+}
+function togAtt(btn,st){const row=btn.closest('.att-student');row.querySelectorAll('.att-btn').forEach(b=>{b.classList.remove('P','A','L')});btn.classList.add(st);}
+function markAll(st){document.querySelectorAll('.att-student').forEach(row=>{row.querySelectorAll('.att-btn').forEach(b=>b.classList.remove('P','A','L'));const target=row.querySelector(`.att-btn:${st==='P'?'first-child':st==='A'?'nth-child(2)':'last-child'}`);if(target)target.classList.add(st);});}
+function submitAtt(){
+  const bid=document.getElementById('att-batch').value,date=document.getElementById('att-date').value;
+  if(!bid||!date){alert('Select batch and date');return;}
+  DB.attendance=DB.attendance.filter(a=>!(a.batchId===bid&&a.date===date));
+  document.querySelectorAll('.att-student').forEach(row=>{const sid=row.querySelector('.att-btn').dataset.sid,ac=row.querySelector('.att-btn.P,.att-btn.A,.att-btn.L');if(ac)DB.attendance.push({id:'a'+Date.now()+sid,studentId:sid,batchId:bid,date,status:ac.classList[1]});});
+  saveDB();alert('✅ Saved!');renderAttHist();
+}
+function renderAttHist(){const tb=document.getElementById('att-history');tb.innerHTML=[...DB.attendance].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30).map(a=>{const s=getStu(a.studentId),b=DB.batches.find(x=>x.id===a.batchId);return`<tr><td>${s?s.name:'?'}</td><td>${b?b.name:'?'}</td><td>${a.date}</td><td><span class="badge ${a.status==='P'?'badge-green':a.status==='A'?'badge-red':'badge-amber'}">${a.status==='P'?'Present':a.status==='A'?'Absent':'Late'}</span></td></tr>`;}).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No records</td></tr>';}
+function exportAtt(){const rows=[['Student','Batch','Date','Status']];DB.attendance.forEach(a=>{const s=getStu(a.studentId),b=DB.batches.find(x=>x.id===a.batchId);rows.push([s?s.name:'',b?b.name:'',a.date,a.status==='P'?'Present':a.status==='A'?'Absent':'Late']);});dlCSV(rows,'attendance.csv');}
+
+// ═══════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════
+function renderTests(){
+  fillBatchSel('t-batch',false);
+  document.getElementById('tests-list').innerHTML=DB.tests.map(t=>{const b=DB.batches.find(x=>x.id===t.batchId),res=DB.testResults.filter(r=>r.testId===t.id),avg=res.length?Math.round(res.reduce((s,r)=>s+r.marks,0)/res.length):null;return`<div class="card"><div class="flex items-center" style="justify-content:space-between;margin-bottom:8px"><div><div class="bold">${t.title}</div><div class="muted small">${b?b.name:''}·${t.date}</div></div><span class="badge badge-blue">${t.total}m</span></div>${avg!==null?`<div class="small muted mb8">Avg: ${avg}/${t.total}(${Math.round(avg/t.total*100)}%)</div>`:''}<div class="pill-row"><button class="btn btn-sm btn-primary" onclick="openMarks('${t.id}')">📝 Enter Marks</button><button class="btn btn-sm btn-red" onclick="delTest('${t.id}')">Del</button></div></div>`;}).join('')+`<div class="card" style="display:flex;align-items:center;justify-content:center;min-height:110px;border-style:dashed;cursor:pointer;color:var(--muted)" onclick="openModal('modal-test')"><div style="text-align:center;font-size:22px">+<div class="small mt8">New Test</div></div></div>`;
+}
+function delTest(id){if(!confirm('Delete?'))return;DB.tests=DB.tests.filter(t=>t.id!==id);DB.testResults=DB.testResults.filter(r=>r.testId!==id);saveDB();renderTests();}
+function openMarks(tid){
+  const test=DB.tests.find(t=>t.id===tid),sts=DB.students.filter(s=>s.batch===test.batchId&&s.status==='active');
+  document.getElementById('marks-panel').style.display='block';
+  document.getElementById('marks-title').textContent=test.title+' — /'+test.total;
+  document.getElementById('marks-tbody').innerHTML=sts.map(s=>{const res=DB.testResults.find(r=>r.testId===tid&&r.studentId===s.id),pct=res?Math.round(res.marks/test.total*100):null,grade=pct===null?'—':pct>=90?'A+':pct>=80?'A':pct>=70?'B':pct>=60?'C':pct>=50?'D':'F';return`<tr><td><div class="flex gap8 items-center"><div class="avatar">${initials(s.name)}</div>${s.name}</div></td><td><input type="number" class="mark-inp" data-sid="${s.id}" data-tid="${tid}" value="${res?res.marks:''}" min="0" max="${test.total}" style="width:70px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" oninput="updPct(this,${test.total})"/></td><td>${test.total}</td><td id="pct-${s.id}">${pct!==null?pct+'%':'—'}</td><td><span class="badge ${grade==='A+'?'badge-green':grade==='F'?'badge-red':'badge-blue'}" id="grade-${s.id}">${grade}</span></td></tr>`;}).join('');
+  document.getElementById('marks-panel').scrollIntoView({behavior:'smooth'});
+}
+function updPct(inp,total){const sid=inp.dataset.sid,v=parseInt(inp.value),pct=isNaN(v)?null:Math.round(v/total*100),g=pct===null?'—':pct>=90?'A+':pct>=80?'A':pct>=70?'B':pct>=60?'C':pct>=50?'D':'F';document.getElementById('pct-'+sid).textContent=pct!==null?pct+'%':'—';document.getElementById('grade-'+sid).textContent=g;}
+function saveMarks(){document.querySelectorAll('.mark-inp').forEach(inp=>{const sid=inp.dataset.sid,tid=inp.dataset.tid,v=parseInt(inp.value);if(isNaN(v))return;const ex=DB.testResults.find(r=>r.testId===tid&&r.studentId===sid);if(ex)ex.marks=v;else DB.testResults.push({id:'tr'+Date.now()+sid,testId:tid,studentId:sid,marks:v});});saveDB();alert('✅ Saved!');renderTests();}
+
+// ═══════════════════════════════════════
+// FEES
+// ═══════════════════════════════════════
+function initFees(){
+  const sel=document.getElementById('fee-stu');sel.innerHTML='<option value="">-- Select --</option>'+DB.students.filter(s=>s.status==='active').map(s=>`<option value="${s.id}">${s.name} (${s.phone})</option>`).join('');
+  renderFeeStructs();renderReceipts();
+}
+function loadStudentFees(){
+  const sid=document.getElementById('fee-stu').value,panel=document.getElementById('fee-dues-panel');
+  if(!sid){panel.style.display='none';return;}
+  panel.style.display='block';
+  const dues=DB.fees.filter(f=>f.studentId===sid&&f.status!=='paid');
+  document.getElementById('fee-dues-list').innerHTML=dues.length?dues.map(f=>`<div class="fee-row"><div><div class="bold small">${f.desc}</div><div class="muted small">Due:${f.due}</div></div><span class="badge ${f.status==='overdue'?'badge-red':'badge-amber'}">₹${f.amount.toLocaleString('en-IN')}</span></div>`).join(''):'<div class="notice green">✅ No pending dues</div>';
+  calcFeeTotal();
+}
+function calcFeeTotal(){const sid=document.getElementById('fee-stu').value;if(!sid)return;const dues=DB.fees.filter(f=>f.studentId===sid&&f.status!=='paid'),tot=dues.reduce((s,f)=>s+(f.amount-f.discount),0),disc=parseInt(document.getElementById('fee-disc').value)||0;document.getElementById('fee-total').textContent='₹'+Math.max(0,tot-disc).toLocaleString('en-IN');}
+function collectFee(){
+  const sid=document.getElementById('fee-stu').value;if(!sid){alert('Select student');return;}
+  const dues=DB.fees.filter(f=>f.studentId===sid&&f.status!=='paid');if(!dues.length){alert('No pending dues');return;}
+  const disc=parseInt(document.getElementById('fee-disc').value)||0,tot=dues.reduce((s,f)=>s+(f.amount-f.discount),0)-disc;
+  dues.forEach(f=>{f.status='paid';f.paid=f.amount-f.discount;f.paidDate=new Date().toISOString().split('T')[0];f.txn='TXN'+Date.now();});
+  const rec={id:'rec'+Date.now(),studentId:sid,amount:tot,discount:disc,date:new Date().toISOString().split('T')[0],mode:document.getElementById('fee-mode').value,items:dues.map(f=>f.desc)};
+  DB.receipts.push(rec);saveDB();showReceipt(rec,getStu(sid));renderReceipts();
+  document.getElementById('fee-dues-panel').style.display='none';document.getElementById('fee-stu').value='';
+}
+function showReceipt(rec,stu){
+  document.getElementById('receipt-body').innerHTML=`<div style="text-align:center;padding-bottom:12px;border-bottom:1px solid var(--border)"><div style="font-size:18px;font-weight:700">📚 ${DB.settings.instituteName||'TuitionPro'}</div><div class="muted small">Fee Receipt</div></div><div style="margin:12px 0"><div class="fee-row"><span class="muted">Receipt</span><span class="bold">${rec.id.slice(-8).toUpperCase()}</span></div><div class="fee-row"><span class="muted">Student</span><span class="bold">${stu?stu.name:'—'}</span></div><div class="fee-row"><span class="muted">Date</span><span>${rec.date}</span></div><div class="fee-row"><span class="muted">Mode</span><span>${rec.mode}</span></div><div class="fee-row"><span class="muted">For</span><span>${rec.items.join(', ')}</span></div>${rec.discount>0?`<div class="fee-row"><span class="muted">Discount</span><span class="green">-₹${rec.discount}</span></div>`:''}<div class="fee-row"><span class="bold">Total Paid</span><span class="bold green" style="font-size:18px">₹${rec.amount.toLocaleString('en-IN')}</span></div></div><div class="notice green" style="text-align:center">✅ Payment Received!</div>`;
+  openModal('modal-receipt');
+}
+function generateUPI(){
+  const sid=document.getElementById('fee-stu').value;if(!sid){alert('Select student');return;}
+  const dues=DB.fees.filter(f=>f.studentId===sid&&f.status!=='paid'),disc=parseInt(document.getElementById('fee-disc').value)||0,tot=Math.max(0,dues.reduce((s,f)=>s+(f.amount-f.discount),0)-disc),s=getStu(sid);
+  document.getElementById('upi-amt-text').textContent=`₹${tot.toLocaleString('en-IN')} for ${s?s.name:''}`;
+  document.getElementById('upi-link').textContent=`upi://pay?pa=tuitionpro@okaxis&pn=${encodeURIComponent(DB.settings.instituteName||'Institute')}&am=${tot}&cu=INR&tn=Fee&tr=TXN${Date.now()}`;
+  document.getElementById('upi-link').dataset.phone=s?s.phone:'';
+  document.getElementById('upi-link').dataset.name=s?s.name:'';
+  document.getElementById('upi-link').dataset.amt=tot;
+  openModal('modal-upi');
+}
+function shareUPIOnWA(){
+  const link=document.getElementById('upi-link');
+  const name=link.dataset.name,amt=link.dataset.amt,phone=link.dataset.phone;
+  const upiLink=link.textContent;
+  const msg=`Hi ${name},\n\nPlease pay your fee of ₹${amt} for ${DB.settings.instituteName||'the institute'}.\n\nUPI Link: ${upiLink}\n\nYou can also pay directly on UPI apps (GPay, PhonePe, Paytm) using this link.\n\nThank you!`;
+  openWALink(phone,msg);
+}
+function copyUPI(){navigator.clipboard?.writeText(document.getElementById('upi-link').textContent);alert('✅ Copied!');}
+function renderReceipts(){document.getElementById('recent-receipts').innerHTML=[...DB.receipts].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8).map(r=>{const s=getStu(r.studentId);return`<div class="fee-row"><div><div class="bold small">${s?s.name:'?'}</div><div class="muted small">${r.date}·${r.mode}</div></div><div class="flex gap8 items-center"><span class="badge badge-green">₹${r.amount.toLocaleString('en-IN')}</span><button class="btn btn-sm" onclick='showReceipt(${JSON.stringify(r)},getStu("${r.studentId}"))'>View</button></div></div>`;}).join('')||'<div class="muted small">No receipts</div>';}
+function renderFeeStructs(){document.getElementById('fee-structs').innerHTML=DB.feeStructures.map(fs=>`<tr><td><div class="bold">${fs.name}</div></td><td><span class="badge badge-blue">${fs.type}</span></td><td class="bold">₹${fs.amount.toLocaleString('en-IN')}</td><td><button class="btn btn-sm btn-red" onclick="delFeeStruct('${fs.id}')">Del</button></td></tr>`).join('');}
+function delFeeStruct(id){if(!confirm('Delete?'))return;DB.feeStructures=DB.feeStructures.filter(f=>f.id!==id);saveDB();renderFeeStructs();}
+
+// ═══════════════════════════════════════
+// DUES
+// ═══════════════════════════════════════
+function renderDues(){
+  const filter=document.getElementById('dues-filter').value;
+  let fees=DB.fees.filter(f=>f.status!=='paid');
+  if(filter==='pending')fees=fees.filter(f=>f.status==='pending');
+  if(filter==='overdue')fees=fees.filter(f=>f.status==='overdue');
+  document.getElementById('dues-total').textContent='₹'+fees.reduce((s,f)=>s+(f.amount-f.discount-f.paid),0).toLocaleString('en-IN');
+  document.getElementById('dues-overdue').textContent='₹'+DB.fees.filter(f=>f.status==='overdue').reduce((s,f)=>s+(f.amount-f.discount-f.paid),0).toLocaleString('en-IN');
+  document.getElementById('dues-collected').textContent='₹'+DB.receipts.filter(r=>r.date.startsWith(new Date().toISOString().slice(0,7))).reduce((s,r)=>s+r.amount,0).toLocaleString('en-IN');
+  document.getElementById('dues-cards').innerHTML=fees.map(f=>{const s=getStu(f.studentId),b=DB.batches.find(x=>x.id===(s?s.batch:''));return`<div class="card mb8"><div class="flex items-center mb8"><div style="flex:1"><div class="bold">${s?s.name:'?'}</div><div class="muted small">${b?b.name:''}·${f.desc}</div></div><span class="badge ${f.status==='overdue'?'badge-red':'badge-amber'}">${f.status}</span></div><div class="flex items-center" style="justify-content:space-between"><span class="bold" style="font-size:16px">₹${(f.amount-f.discount-f.paid).toLocaleString('en-IN')}</span><div class="flex gap8"><button class="btn btn-wa btn-sm" onclick="waFeeReminder('${f.id}')">💬 WA</button><button class="btn btn-primary btn-sm" onclick="quickCollect('${f.id}')">Collect</button></div></div></div>`;}).join('')||'<div class="card" style="text-align:center;padding:24px;color:var(--muted)">🎉 No pending dues!</div>';
+}
+function waFeeReminder(feeId){
+  const f=DB.fees.find(x=>x.id===feeId),s=getStu(f?f.studentId:'');
+  if(!f||!s)return;
+  const amt=(f.amount-f.discount-f.paid).toLocaleString('en-IN');
+  const msg=buildFeeReminderMsg(s.name,`₹${amt}`,f.due);
+  openWALink(s.guardianPhone||s.phone,msg);
+}
+function quickCollect(id){const f=DB.fees.find(x=>x.id===id);if(!f)return;f.status='paid';f.paid=f.amount-f.discount;f.paidDate=new Date().toISOString().split('T')[0];f.txn='TXN'+Date.now();const rec={id:'rec'+Date.now(),studentId:f.studentId,amount:f.amount-f.discount,discount:f.discount,date:f.paidDate,mode:'Cash',items:[f.desc]};DB.receipts.push(rec);saveDB();renderDues();showReceipt(rec,getStu(f.studentId));}
+function exportDues(){const rows=[['Student','Phone','Description','Amount','Due Date','Status']];DB.fees.filter(f=>f.status!=='paid').forEach(f=>{const s=getStu(f.studentId);rows.push([s?s.name:'',s?s.phone:'',f.desc,'₹'+(f.amount-f.discount-f.paid),f.due,f.status]);});dlCSV(rows,'dues.csv');}
+
+// ═══════════════════════════════════════
+// WHATSAPP SYSTEM
+// ═══════════════════════════════════════
+let waMethod=null; // 'web' or 'wame'
+
+function updateWAStatus(){
+  const cfg=DB.waConfig||{};
+  const dot=document.getElementById('wa-dot');
+  const txt=document.getElementById('wa-status-text');
+  const sub=document.getElementById('wa-status-sub');
+  const btn=document.getElementById('wa-connect-btn');
+  const bar=document.getElementById('wa-status-bar');
+  if(cfg.method){
+    dot.classList.add('connected');
+    txt.textContent=cfg.method==='web'?'WhatsApp Web Connected':'wa.me Links Active';
+    sub.textContent=cfg.method==='web'?'Messages open in WhatsApp Web tab':'Each message opens WhatsApp app directly';
+    btn.textContent='Change';
+    bar.style.background='var(--wal)';
+    waMethod=cfg.method;
+  } else {
+    dot.classList.remove('connected');
+    txt.textContent='WhatsApp Not Connected';
+    sub.textContent='Tap Connect to send real messages';
+    btn.textContent='Connect';
+    bar.style.background='#fff5f5';
+    bar.style.borderColor='rgba(220,38,38,.2)';
+  }
+}
+
+function openWASetup(){
+  waStep(1);
+  openModal('modal-wa-setup');
+}
+
+function waStep(n){
+  document.getElementById('wa-step-1').style.display=n===1?'block':'none';
+  document.getElementById('wa-step-2').style.display=n===2?'block':'none';
+  document.getElementById('wa-step-3').style.display=n===3?'block':'none';
+  // Update step indicators
+  [1,2,3].forEach(i=>{
+    const dot=document.getElementById('ws-dot-'+i);
+    dot.className='ps-dot'+(i<n?' done':i===n?' active':'');
+  });
+  [1,2].forEach(i=>{const bar=document.getElementById('ws-bar-'+i);if(bar)bar.className='ps'+(i<n?' done':'');});
+}
+
+function selectWAMethod(method){
+  waMethod=method;
+  document.getElementById('wa-web-instructions').style.display=method==='web'?'block':'none';
+  document.getElementById('wa-wame-instructions').style.display=method==='wame'?'block':'none';
+  document.getElementById('wa-next-btn').style.display=method==='web'?'flex':'none';
+  waStep(2);
+}
+
+function openWAWeb(){
+  window.open('https://web.whatsapp.com','_blank');
+  setTimeout(()=>waStep(3),1000);
+  DB.waConfig={method:'web',connected:true};
+  saveDB();updateWAStatus();
+  document.getElementById('wa-done-msg').textContent='WhatsApp Web is open in another tab. Keep it open to send messages from there.';
+}
+
+function confirmWAMethod(){
+  DB.waConfig={method:'wame',connected:true};
+  saveDB();updateWAStatus();
+  document.getElementById('wa-done-msg').textContent='wa.me mode active. Each message click will open WhatsApp with pre-filled text.';
+  waStep(3);
+}
+
+// Core WA link opener
+function openWALink(phone,msg){
+  // Clean phone number
+  let p=(phone||'').replace(/\D/g,'');
+  if(p.length===10) p='91'+p; // Add India code
+  const url=`https://wa.me/${p}?text=${msg}`;
+  window.open(url,'_blank');
+}
+
+function buildFeeReminderMsg(name,amount,due){
+  return encodeURIComponent(`Hi ${name},\n\nThis is a reminder from ${DB.settings.instituteName||'your institute'}.\n\n📌 Fee due: ${amount}\n📅 Due date: ${due}\n\nPlease pay at the earliest to avoid any inconvenience.\n\nContact: ${DB.settings.phone||''}\n\nThank you!`);
+}
+
+// ─── COMMUNICATE PAGE ───
+function initCommunicate(){
+  fillBatchSel('msg-batch',false);
+  document.getElementById('msg-to').onchange=function(){
+    document.getElementById('msg-batch-div').style.display=this.value==='batch'?'block':'none';
+    document.getElementById('msg-custom-div').style.display=this.value==='custom'?'block':'none';
+    updateMsgPreview();
+  };
+  renderMsgLog();
+  updateMsgPreview();
+  document.getElementById('msg-body').addEventListener('input',updateMsgPreview);
+  updateWAStatus();
+}
+
+function loadTemplate(){
+  const t=document.getElementById('msg-template').value;
+  const inst=DB.settings.instituteName||'your institute';
+  const phone=DB.settings.phone||'';
+  const templates={
+    fee_reminder:`Dear {name},\n\nHope you're doing well. This is a gentle reminder that your fee payment is due.\n\n💰 Please pay at the earliest to avoid late charges.\n\n📞 Contact: ${phone}\n\n${inst}`,
+    attendance_alert:`Dear Parent,\n\nThis is to inform you that {name} was marked absent today.\n\nIf there is any issue, please contact us.\n\n📞 ${phone}\n\n${inst}`,
+    test_result:`Dear {name},\n\nYour test result has been updated. Please login to the student portal to view your marks and performance.\n\n${inst}`,
+    holiday:`Dear Students & Parents,\n\n🎉 Institute will remain CLOSED on {date}.\n\nClasses will resume from {resume}.\n\n${inst}`,
+    new_batch:`📚 New Batch Starting!\n\nSubject: {subject}\nSchedule: {schedule}\nFee: {fee}/month\n\nLimited seats. Enroll now!\n📞 ${phone}\n\n${inst}`
+  };
+  document.getElementById('msg-body').value=templates[t]||'';
+  updateMsgPreview();
+}
+
+function updateMsgPreview(){
+  const body=document.getElementById('msg-body').value.trim();
+  const to=document.getElementById('msg-to').value;
+  const bubble=document.getElementById('msg-preview-bubble');
+  const info=document.getElementById('msg-recipient-info');
+  if(body){bubble.style.display='block';bubble.textContent=body.slice(0,200)+(body.length>200?'...':'');}
+  else bubble.style.display='none';
+  let count=0,desc='';
+  if(to==='all'){count=DB.students.filter(s=>s.status==='active').length;desc=`${count} students`;}
+  else if(to==='batch'){const bid=document.getElementById('msg-batch').value;count=DB.students.filter(s=>s.batch===bid&&s.status==='active').length;desc=`${count} students in batch`;}
+  else if(to==='overdue'){count=[...new Set(DB.fees.filter(f=>f.status==='overdue').map(f=>f.studentId))].length;desc=`${count} students with overdue fees`;}
+  else if(to==='custom'){desc='1 custom number';}
+  info.textContent=desc?`Will send to: ${desc}`:'';
+}
+
+function sendWhatsApp(){
+  const body=document.getElementById('msg-body').value.trim();
+  if(!body){alert('Write a message first');return;}
+  const to=document.getElementById('msg-to').value;
+  const cfg=DB.waConfig||{};
+
+  // Get recipient list
+  let recipients=[];
+  if(to==='all') recipients=DB.students.filter(s=>s.status==='active');
+  else if(to==='batch'){const bid=document.getElementById('msg-batch').value;recipients=DB.students.filter(s=>s.batch===bid&&s.status==='active');}
+  else if(to==='overdue'){const oids=[...new Set(DB.fees.filter(f=>f.status==='overdue').map(f=>f.studentId))];recipients=oids.map(id=>getStu(id)).filter(Boolean);}
+  else if(to==='custom'){const ph=document.getElementById('msg-custom-phone').value.trim();if(!ph){alert('Enter phone number');return;}recipients=[{name:'Student',phone:ph,id:'custom'}];}
+
+  if(!recipients.length){alert('No recipients found');return;}
+
+  // Log message
+  const labels={all:'All Students',batch:'Batch',overdue:'Overdue Students',custom:'Custom'};
+  DB.messages.unshift({id:'m'+Date.now(),to:labels[to]||to,channel:'WhatsApp',body:body.slice(0,80),time:new Date().toLocaleString('en-IN'),status:'Sent',count:recipients.length});
+  saveDB();
+
+  // Send based on method
+  if(!cfg.method){
+    // Not configured — open setup first
+    if(confirm('WhatsApp not connected. Connect now?'))openWASetup();
+    return;
+  }
+
+  if(recipients.length===1){
+    // Single: open directly
+    const s=recipients[0];
+    const personalMsg=body.replace(/{name}/g,s.name);
+    openWALink(s.guardianPhone||s.phone,encodeURIComponent(personalMsg));
+  } else {
+    // Multiple: show list of links
+    showBulkWAModal(recipients,body);
+  }
+  renderMsgLog();
+}
+
+function showBulkWAModal(recipients,bodyTemplate){
+  const listDiv=document.createElement('div');
+  listDiv.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:flex-end;justify-content:center';
+  const inst=DB.settings.instituteName||'Institute';
+  listDiv.innerHTML=`<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:85dvh;overflow-y:auto"><div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff"><h3 style="font-size:15px;font-weight:700">Send to ${recipients.length} Students</h3><button onclick="this.closest('div[style]').remove()" style="background:none;border:none;font-size:22px;cursor:pointer">✕</button></div><div style="padding:16px"><div class="notice wa mb12">Tap each button to open WhatsApp and send the message to that student.</div><div style="display:flex;flex-direction:column;gap:8px">${recipients.map(s=>{const msg=encodeURIComponent(bodyTemplate.replace(/{name}/g,s.name));let p=(s.guardianPhone||s.phone||'').replace(/\D/g,'');if(p.length===10)p='91'+p;const url=`https://wa.me/${p}?text=${msg}`;return`<a href="${url}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--wal);border:1px solid rgba(37,211,102,.3);border-radius:10px;text-decoration:none;color:var(--text)"><div style="width:36px;height:36px;border-radius:50%;background:var(--wa);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${initials(s.name)}</div><div style="flex:1"><div style="font-weight:600;font-size:13px">${s.name}</div><div style="font-size:11px;color:var(--muted)">${s.phone}</div></div><span style="font-size:20px">💬</span></a>`;}).join('')}</div></div></div>`;
+  document.body.appendChild(listDiv);
+}
+
+function openWAReminders(){
+  const overdue=DB.fees.filter(f=>f.status==='overdue');
+  const cfg=DB.waConfig||{};
+  document.getElementById('wa-reminder-method-notice').textContent=cfg.method?
+    (cfg.method==='web'?'💻 WhatsApp Web mode: messages will open in WhatsApp Web':'📱 wa.me mode: each student button opens WhatsApp app'):
+    '⚠️ WhatsApp not connected. Connect first for real sending.';
+  document.getElementById('reminder-count').textContent=overdue.length;
+  document.getElementById('reminder-msg').value=`Dear {name},\n\nThis is a fee payment reminder from ${DB.settings.instituteName||'your institute'}.\n\n💰 Amount due: {amount}\n📅 Due date: {due}\n\nPlease pay immediately.\n\n📞 ${DB.settings.phone||''}\n\nThank you!`;
+  const listDiv=document.getElementById('reminder-list');
+  listDiv.innerHTML=overdue.map(f=>{const s=getStu(f.studentId),amt='₹'+(f.amount-f.discount-f.paid).toLocaleString('en-IN');return`<div class="wa-contact-row"><div><div class="bold small">${s?s.name:'?'}</div><div class="muted small">${s?s.phone:''} · ${f.desc} · ${amt}</div></div><button class="btn btn-wa btn-sm" onclick="sendReminder('${f.id}')">💬 Send</button></div>`;}).join('')||'<div class="muted small" style="padding:12px 0">No overdue fees</div>';
+  openModal('modal-wa-reminders');
+}
+
+function sendReminder(feeId){
+  const f=DB.fees.find(x=>x.id===feeId),s=getStu(f?f.studentId:'');
+  if(!f||!s)return;
+  const tmpl=document.getElementById('reminder-msg').value;
+  const amt='₹'+(f.amount-f.discount-f.paid).toLocaleString('en-IN');
+  const msg=tmpl.replace(/{name}/g,s.name).replace(/{amount}/g,amt).replace(/{due}/g,f.due);
+  openWALink(s.guardianPhone||s.phone,encodeURIComponent(msg));
+}
+
+function sendAllReminders(){
+  const overdue=DB.fees.filter(f=>f.status==='overdue');
+  const tmpl=document.getElementById('reminder-msg').value;
+  const recipients=overdue.map(f=>{const s=getStu(f.studentId);return{...s,fee:f};}).filter(s=>s&&s.id);
+  closeModal('modal-wa-reminders');
+  showBulkWAModal(recipients.map(s=>{const amt='₹'+(s.fee.amount-s.fee.discount-s.fee.paid).toLocaleString('en-IN');return{...s,_msg:tmpl.replace(/{name}/g,s.name).replace(/{amount}/g,amt).replace(/{due}/g,s.fee.due)};}),tmpl);
+}
+
+function renderMsgLog(){
+  document.getElementById('msg-log').innerHTML=DB.messages.slice(0,10).map(m=>`<div class="card-sm mb8"><div class="flex items-center" style="justify-content:space-between;margin-bottom:4px"><span class="bold small">To: ${m.to}</span><span class="badge badge-wa" style="font-size:10px">WA · ${m.count||1}</span></div><div class="muted small" style="margin-bottom:3px">${m.body}</div><div class="muted" style="font-size:10px">${m.time}</div></div>`).join('')||'<div class="muted small">No messages yet</div>';
+}
+
+// ─── PROMOTIONS ───
+function initPromo(){
+  const pd={new_batch:{main:'New Batch Starting!',sub:'Enroll Now — Limited Seats'},results:{main:'Brilliant Results! 🏆',sub:'Our Students Shine Again'},offer:{main:'Special Offer!',sub:'Enroll & Save 20%'},holiday:{main:'Holiday Notice 📢',sub:'Institute Closed'}};
+  const t=document.getElementById('promo-tpl').value,d=pd[t]||pd.new_batch;
+  if(!document.getElementById('promo-main').value)document.getElementById('promo-main').value=d.main;
+  if(!document.getElementById('promo-sub').value)document.getElementById('promo-sub').value=d.sub;
+  document.getElementById('promo-inst').value=DB.settings.instituteName||'Bright Future Academy';
+  updatePromo();
+}
+function updatePromo(){
+  const t=document.getElementById('promo-tpl').value;
+  const colors={new_batch:['#4361ee','#eef0fd'],results:['#16a34a','#f0fdf4'],offer:['#d97706','#fffbeb'],holiday:['#0891b2','#ecfeff']};
+  const [primary,light]=colors[t]||colors.new_batch;
+  const inst=document.getElementById('promo-inst').value||'Institute';
+  const main=document.getElementById('promo-main').value||'';
+  const sub=document.getElementById('promo-sub').value||'';
+  const contact=document.getElementById('promo-contact').value||'';
+  const canvas=document.getElementById('promo-canvas'),ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,400,400);ctx.fillStyle=light;ctx.fillRect(0,0,400,400);
+  ctx.fillStyle=primary;ctx.fillRect(0,0,400,80);ctx.fillRect(0,320,400,80);
+  ctx.fillStyle=primary;ctx.globalAlpha=0.07;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(360,360,30+i*30,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
+  ctx.fillStyle='#fff';ctx.font='bold 16px Segoe UI,sans-serif';ctx.textAlign='center';ctx.fillText('📚 '+inst.toUpperCase(),200,50);
+  ctx.fillStyle=primary;ctx.font='bold 28px Segoe UI,sans-serif';
+  const words=main.split(' ');let line='',y=150;words.forEach((w,i)=>{const test=line+w+' ';if(ctx.measureText(test).width>340&&i>0){ctx.fillText(line.trim(),200,y);line=w+' ';y+=36;}else line=test;});ctx.fillText(line.trim(),200,y);
+  ctx.fillStyle='#555';ctx.font='15px Segoe UI,sans-serif';ctx.fillText(sub,200,y+40);
+  ctx.fillStyle='#fff';ctx.font='bold 14px Segoe UI,sans-serif';ctx.fillText(contact,200,348);
+  document.getElementById('promo-text').textContent=`📚 ${inst}\n\n${main}\n${sub}\n\n${contact}`;
+}
+function downloadPromo(){updatePromo();const a=document.createElement('a');a.download='promo.png';a.href=document.getElementById('promo-canvas').toDataURL();a.click();}
+function copyPromoText(){navigator.clipboard?.writeText(document.getElementById('promo-text').textContent);alert('✅ Copied!');}
+function sharePromoWA(){
+  updatePromo();
+  const text=document.getElementById('promo-text').textContent;
+  const msg=encodeURIComponent(text);
+  window.open(`https://wa.me/?text=${msg}`,'_blank');
+}
+
+// ─── SETTINGS ───
+function loadSettings(){document.getElementById('set-name').value=DB.settings.instituteName||'';document.getElementById('set-phone').value=DB.settings.phone||'';document.getElementById('set-address').value=DB.settings.address||'';}
+function saveSettings(){DB.settings.instituteName=document.getElementById('set-name').value;DB.settings.phone=document.getElementById('set-phone').value;DB.settings.address=document.getElementById('set-address').value;saveDB();document.getElementById('inst-name-sb').textContent=DB.settings.instituteName;alert('✅ Saved!');}
+function changePass(){const o=document.getElementById('p-old').value,n=document.getElementById('p-new').value,c=document.getElementById('p-confirm').value,m=document.getElementById('pass-msg');if(o!==DB.settings.adminPassword){m.style.color='var(--red)';m.textContent='Wrong current password';return;}if(n.length<6){m.style.color='var(--red)';m.textContent='Min 6 chars';return;}if(n!==c){m.style.color='var(--red)';m.textContent='Passwords don\'t match';return;}DB.settings.adminPassword=n;saveDB();m.style.color='var(--green)';m.textContent='✅ Changed!';}
+function exportAll(){exportAtt();}
+function backupData(){navigator.clipboard?.writeText(JSON.stringify(DB,null,2));alert('✅ Data copied to clipboard as JSON');}
+function clearData(){if(!confirm('Delete ALL data?')||!confirm('Are you sure?'))return;localStorage.removeItem('tp_v3');location.reload();}
+
+// ─── STUDENT PORTAL ───
+function getSID(){return CU?.sid;}
+function renderSPHome(){
+  const sid=getSID(),s=getStu(sid),batch=DB.batches.find(b=>b.id===s?.batch);
+  document.getElementById('sp-av').textContent=s?initials(s.name):'?';
+  document.getElementById('sp-name').textContent=s?'Hi, '+s.name.split(' ')[0]+'! 👋':'Student';
+  document.getElementById('sp-batch').textContent=(batch?batch.name:'No batch')+' · '+(DB.settings.instituteName||'Institute');
+  document.getElementById('sp-att-h').textContent=stuAttPct(sid)+'%';
+  const res=DB.testResults.filter(r=>r.studentId===sid);
+  if(res.length){const last=res[res.length-1],t=DB.tests.find(x=>x.id===last.testId);document.getElementById('sp-score-h').textContent=last.marks+(t?'/'+t.total:'');}
+  else document.getElementById('sp-score-h').textContent='—';
+  const dues=DB.fees.filter(f=>f.studentId===sid&&f.status!=='paid'),da=dues.reduce((x,f)=>x+(f.amount-f.discount-f.paid),0);
+  document.getElementById('sp-due-h').textContent='₹'+da.toLocaleString('en-IN');
+  document.getElementById('sp-alert').innerHTML=da>0?`<div class="notice amber mb12">⚠️ You have ₹${da.toLocaleString('en-IN')} in pending fees. <a href="#" onclick="nav('sp-fees')" style="color:var(--amber);font-weight:600">View →</a></div>`:'<div class="notice green mb12">✅ All fees paid!</div>';
+  document.getElementById('sp-schedule').innerHTML=batch?`<div class="card-sm" style="background:var(--bg)"><div class="bold small mb8">${batch.name}</div><div class="muted small">📅 ${batch.days}</div><div class="muted small">🕐 ${batch.time}</div><div class="muted small">👨‍🏫 ${batch.teacher||'—'}</div></div>`:'<div class="muted small">No batch assigned</div>';
+}
+function renderSPAtt(){
+  const sid=getSID(),recs=DB.attendance.filter(a=>a.studentId===sid).sort((a,b)=>b.date.localeCompare(a.date));
+  const p=recs.filter(a=>a.status==='P').length,ab=recs.filter(a=>a.status==='A').length,l=recs.filter(a=>a.status==='L').length;
+  document.getElementById('sp-present').textContent=p;document.getElementById('sp-absent').textContent=ab;
+  const tot=p+ab+l;document.getElementById('sp-pct').textContent=tot?Math.round(p/tot*100)+'%':'—';
+  document.getElementById('sp-cal').innerHTML=recs.slice(0,28).reverse().map(a=>`<div class="cal-day ${a.status}" title="${a.date}">${a.date.slice(8)}</div>`).join('');
+  document.getElementById('sp-att-rows').innerHTML=recs.slice(0,20).map(a=>{const b=DB.batches.find(x=>x.id===a.batchId);return`<tr><td>${a.date}</td><td>${b?b.name:'?'}</td><td><span class="badge ${a.status==='P'?'badge-green':a.status==='A'?'badge-red':'badge-amber'}">${a.status==='P'?'Present':a.status==='A'?'Absent':'Late'}</span></td></tr>`;}).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">No records yet</td></tr>';
+}
+function renderSPTests(){
+  const sid=getSID(),results=DB.testResults.filter(r=>r.studentId===sid);
+  const chart=document.getElementById('sp-chart');
+  if(results.length){const bars=results.map(r=>{const t=DB.tests.find(x=>x.id===r.testId),pct=t?Math.round(r.marks/t.total*100):0;return{label:t?t.title.slice(0,10):'',pct,marks:r.marks,total:t?t.total:0};});chart.innerHTML=`<div style="background:var(--bg);padding:14px;border-radius:10px;margin-bottom:12px"><div style="display:flex;align-items:flex-end;gap:8px;height:90px">${bars.map(b=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div style="font-size:9px;color:var(--muted)">${b.pct}%</div><div style="flex:1;width:100%;background:${b.pct>=75?'var(--green)':b.pct>=50?'var(--amber)':'var(--red)'};border-radius:3px 3px 0 0;min-height:3px;height:${b.pct}%"></div></div>`).join('')}</div><div style="display:flex;gap:8px;margin-top:5px">${bars.map(b=>`<div style="flex:1;font-size:9px;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.label}</div>`).join('')}</div></div>`;}
+  else chart.innerHTML='';
+  document.getElementById('sp-test-rows').innerHTML=results.length?results.map(r=>{const t=DB.tests.find(x=>x.id===r.testId),pct=t?Math.round(r.marks/t.total*100):0,grade=pct>=90?'A+':pct>=80?'A':pct>=70?'B':pct>=60?'C':pct>=50?'D':'F';return`<div class="score-row"><div><div class="bold small">${t?t.title:'Test'}</div><div class="muted small">${t?t.date:''}</div></div><div style="text-align:right"><div class="bold">${r.marks}${t?'/'+t.total:''}</div><span class="badge ${pct>=75?'badge-green':pct>=50?'badge-blue':'badge-red'}">${pct}%·${grade}</span></div></div>`;}).join(''):'<div class="muted small" style="padding:16px 0;text-align:center">No results yet</div>';
+}
+function renderSPFees(){
+  const sid=getSID();
+  document.getElementById('sp-fee-rows').innerHTML=DB.fees.filter(f=>f.studentId===sid).map(f=>`<div class="fee-row"><div><div class="bold small">${f.desc}</div><div class="muted small">Due:${f.due}</div></div><div style="text-align:right"><span class="badge ${f.status==='paid'?'badge-green':f.status==='overdue'?'badge-red':'badge-amber'}">${f.status}</span><div class="bold small mt8">${f.status==='paid'?'Paid':'₹'+(f.amount-f.discount).toLocaleString('en-IN')}</div></div></div>`).join('')||'<div class="muted small">No records</div>';
+  document.getElementById('sp-receipt-rows').innerHTML=DB.receipts.filter(r=>r.studentId===sid).sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<div class="fee-row"><div><div class="bold small">₹${r.amount.toLocaleString('en-IN')}·${r.mode}</div><div class="muted small">${r.date}·${r.items.join(',')}</div></div><button class="btn btn-sm" onclick='showReceipt(${JSON.stringify(r)},getStu("${r.studentId}"))'>View</button></div>`).join('')||'<div class="muted small">No payment history</div>';
+}
+function renderSPNotices(){
+  document.getElementById('sp-notices').innerHTML=DB.messages.slice(0,20).map(m=>`<div class="card-sm mb8"><div class="flex items-center" style="justify-content:space-between;margin-bottom:6px"><span class="badge badge-wa" style="font-size:10px">WhatsApp</span><span class="muted" style="font-size:10px">${m.time}</span></div><div style="font-size:13px">${m.body}</div></div>`).join('')||'<div class="muted small" style="padding:20px;text-align:center">No notices yet</div>';
+}
+
+// ═══════════════════════════════════════
+// MODALS & FORMS
+// ═══════════════════════════════════════
+function openModal(id){
+  if(id==='modal-student'){fillBatchSel('s-batch',false);const fs=document.getElementById('s-fstruct');fs.innerHTML='<option value="">None</option>'+DB.feeStructures.map(f=>`<option value="${f.id}">${f.name}(₹${f.amount})</option>`).join('');document.getElementById('s-enroll').value=new Date().toISOString().split('T')[0];}
+  if(id==='modal-test'){fillBatchSel('t-batch',false);document.getElementById('t-date').value=new Date().toISOString().split('T')[0];}
+  if(id==='modal-lead')document.getElementById('l-followup').value=new Date(Date.now()+3*86400000).toISOString().split('T')[0];
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open');});
+
+function addStudent(){
+  const name=vv('s-name'),phone=vv('s-phone');if(!name||!phone){alert('Name and phone required');return;}
+  if(DB.students.find(s=>s.phone===phone)){alert('Phone already registered');return;}
+  const s={id:'s'+Date.now(),name,phone,guardian:vv('s-guardian'),guardianPhone:vv('s-gphone'),batch:vv('s-batch'),feeStruct:vv('s-fstruct'),status:vv('s-status'),enroll:vv('s-enroll')};
+  if(s.feeStruct){const fs=DB.feeStructures.find(f=>f.id===s.feeStruct);if(fs)DB.fees.push({id:'f'+Date.now(),studentId:s.id,structId:fs.id,desc:fs.type==='monthly'?new Date().toLocaleString('en-IN',{month:'long',year:'numeric'}):fs.name,amount:fs.amount,discount:0,paid:0,status:'pending',due:new Date().toISOString().split('T')[0],paidDate:'',txn:''});}
+  DB.students.push(s);saveDB();closeModal('modal-student');renderStudents();
+  alert('✅ '+name+' added! They can login with: '+phone);
+  ['s-name','s-phone','s-guardian','s-gphone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+function addLead(){const name=vv('l-name'),phone=vv('l-phone');if(!name||!phone){alert('Name and phone required');return;}DB.leads.push({id:'l'+Date.now(),name,phone,course:vv('l-course'),source:vv('l-source'),status:vv('l-status'),notes:vv('l-notes'),followup:vv('l-followup')});saveDB();closeModal('modal-lead');renderLeads();}
+function addBatch(){const name=vv('b-name');if(!name){alert('Name required');return;}DB.batches.push({id:'b'+Date.now(),name,subject:vv('b-subject'),teacher:vv('b-teacher'),days:vv('b-days'),time:vv('b-time'),capacity:parseInt(vv('b-cap'))||30});saveDB();closeModal('modal-batch');renderBatches();}
+function addTest(){const title=vv('t-title'),bid=vv('t-batch');if(!title||!bid){alert('Title and batch required');return;}DB.tests.push({id:'t'+Date.now(),title,batchId:bid,total:parseInt(vv('t-total'))||100,date:vv('t-date')});saveDB();closeModal('modal-test');renderTests();}
+function addFeeStruct(){const name=vv('fs-name'),amount=parseFloat(vv('fs-amount'));if(!name||!amount){alert('Name and amount required');return;}DB.feeStructures.push({id:'fs'+Date.now(),name,type:vv('fs-type'),amount});saveDB();closeModal('modal-fee-structure');renderFeeStructs();}
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+function vv(id){return document.getElementById(id)?.value||''}
+function initials(n){return n.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase()}
+function getStu(id){return DB.students.find(s=>s.id===id)}
+function bName(id){const b=DB.batches.find(x=>x.id===id);return b?b.name:'—'}
+function stuAttPct(sid){const r=DB.attendance.filter(a=>a.studentId===sid);return r.length?Math.round(r.filter(a=>a.status==='P').length/r.length*100):100;}
+function fillBatchSel(id,addAll){const el=document.getElementById(id);if(!el)return;const c=el.value;el.innerHTML=(addAll?'<option value="">All Batches</option>':'<option value="">-- Select --</option>')+DB.batches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');if(c)el.value=c;}
+function dlCSV(rows,filename){const csv=rows.map(r=>r.map(c=>'"'+(c||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=filename;a.click();}
+
+// ── INIT ──
+loadDB();
+</script>
+</body>
+</html>
